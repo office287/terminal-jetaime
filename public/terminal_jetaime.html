@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>terminal je t'aime</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0e0f14;
+    --surface:   #14151c;
+    --surface2:  #1c1d27;
+    --border:    #2a2b3a;
+    --border-h:  #c8435a;
+    --rouge:     #e8455e;
+    --rouge-dim: #5a1a24;
+    --cream:     #f5edd8;
+    --cream-dim: #a09070;
+    --gold:      #e8c872;
+    --lavender:  #a08cdc;
+    --mint:      #5cd4b0;
+    --text:      #ddd8cc;
+    --text-dim:  #6a6678;
+    --cmd-color: #f5edd8;
+    --arg-color: #e8c872;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 64px;
+    overflow-x: hidden;
+  }
+
+  /* grain */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.35;
+  }
+
+  /* ══ HERO ══ */
+  .hero {
+    position: relative;
+    padding: 56px 40px 48px;
+    max-width: 1140px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--rouge);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 28px; height: 1px;
+    background: var(--rouge);
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(44px, 7vw, 82px);
+    font-weight: 900;
+    line-height: 0.92;
+    color: var(--cream);
+    letter-spacing: -1px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--rouge);
+    display: block;
+  }
+
+  .hero-sub {
+    margin-top: 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-sub .prompt { color: var(--rouge); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 15px;
+    background: var(--rouge);
+    animation: blink 1s step-start infinite;
+    vertical-align: middle;
+  }
+
+  .hero-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+  .hero-badge .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+  }
+  .hero-badge .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ══ SEARCH ══ */
+  .search-wrap {
+    max-width: 1140px;
+    margin: 28px auto 0;
+    padding: 0 40px;
+  }
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .search-icon {
+    position: absolute;
+    left: 17px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    pointer-events: none;
+    user-select: none;
+  }
+  #search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    padding: 14px 48px 14px 46px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    caret-color: var(--rouge);
+  }
+  #search::placeholder { color: var(--text-dim); }
+  #search:focus {
+    border-color: var(--rouge);
+    box-shadow: 0 0 0 3px rgba(232,69,94,0.13);
+  }
+  .search-hint {
+    position: absolute;
+    right: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .search-clear {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    display: none;
+    padding: 2px 4px;
+    transition: color 0.15s;
+  }
+  .search-clear:hover { color: var(--rouge); }
+  .search-clear.visible { display: block; }
+  .search-hint.hidden { display: none; }
+
+  .no-results {
+    display: none;
+    max-width: 1140px;
+    margin: 20px auto 0;
+    padding: 0 40px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .no-results.visible { display: block; }
+
+  /* ══ GRID ══ */
+  .grid {
+    max-width: 1140px;
+    margin: 28px auto 0;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 16px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.22s, transform 0.22s, box-shadow 0.22s;
+  }
+  .section:hover {
+    border-color: var(--border-h);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .section.hidden { display: none; }
+
+  .section-header {
+    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .cat-icon { font-size: 15px; line-height: 1; flex-shrink: 0; }
+  .section-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .cmd-count {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 2px 9px;
+  }
+
+  /* ══ CMD ROWS ══ */
+  .commands { padding: 6px 0; }
+
+  .cmd-row {
+    display: grid;
+    grid-template-columns: minmax(0,1.1fr) minmax(0,1fr) auto;
+    gap: 10px;
+    padding: 10px 12px 10px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.035);
+    align-items: center;
+    transition: background 0.14s;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cmd-row:last-child { border-bottom: none; }
+  .cmd-row:hover { background: rgba(232,69,94,0.055); }
+  .cmd-row:hover .copy-btn:not([disabled]) { opacity: 1; }
+  .cmd-row:active { background: rgba(232,69,94,0.13); }
+  .cmd-row.flash {
+    background: rgba(92,212,176,0.13) !important;
+    transition: background 0s;
+  }
+
+  .cmd {
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--cmd-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cmd .arg { color: var(--arg-color); font-weight: 400; }
+
+  .desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.35;
+  }
+
+  /* ══ COPY BUTTON ══ */
+  .copy-btn {
+    opacity: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 3px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.4px;
+  }
+  .copy-btn:hover:not([disabled]) {
+    border-color: var(--rouge);
+    color: var(--rouge);
+    background: rgba(232,69,94,0.1);
+  }
+  .copy-btn.copied {
+    border-color: var(--mint);
+    color: var(--mint);
+    background: rgba(92,212,176,0.1);
+    opacity: 1 !important;
+  }
+  .copy-btn[disabled] {
+    opacity: 0.2;
+    cursor: default;
+    font-size: 14px;
+    padding: 1px 8px;
+  }
+
+  /* search highlights */
+  mark {
+    background: rgba(232,200,114,0.22);
+    color: var(--gold);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  /* ══ CATEGORY COLORS ══ */
+  .nav        .section-title { color: var(--mint); }
+  .file       .section-title { color: var(--gold); }
+  .view       .section-title { color: var(--lavender); }
+  .search-sec .section-title { color: #5cc8f0; }
+  .perm       .section-title { color: #ff8c5a; }
+  .proc       .section-title { color: #f472b6; }
+  .net        .section-title { color: var(--mint); }
+  .arc        .section-title { color: var(--gold); }
+  .sys        .section-title { color: #94a3b8; }
+  .git        .section-title { color: var(--rouge); }
+  .expo       .section-title { color: var(--lavender); }
+
+  /* ══ FOOTER ══ */
+  footer {
+    max-width: 1140px;
+    margin: 44px auto 0;
+    padding: 22px 40px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--rouge);
+  }
+  .footer-tips {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .footer-tips kbd {
+    font-family: 'DM Mono', monospace;
+    color: var(--cream-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+  }
+
+  @media (max-width: 640px) {
+    .hero { grid-template-columns: 1fr; padding: 36px 20px 32px; }
+    .hero-badge { display: none; }
+    .grid, .search-wrap, footer { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">macOS cheat sheet</div>
+    <h1>terminal<em>je t'aime</em></h1>
+    <div class="hero-sub">
+      <span class="prompt">~/</span>
+      <span>$ every command you actually need</span>
+      <span class="cursor"></span>
+    </div>
+  </div>
+  <div class="hero-badge">
+    <div class="num" id="totalCount">0</div>
+    <div class="label">commands</div>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">/</span>
+    <input type="text" id="search" placeholder="search commands or descriptions…" autocomplete="off" spellcheck="false">
+    <span class="search-hint" id="searchHint">press /</span>
+    <button class="search-clear" id="clearBtn" aria-label="Clear search">×</button>
+  </div>
+</div>
+<div class="no-results" id="noResults">no results for "<span id="noResultsQuery"></span>"</div>
+
+<div class="grid" id="grid">
+
+  <div class="section nav">
+    <div class="section-header"><span class="cat-icon">📁</span><span class="section-title">Navigation</span><span class="cmd-count">7</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="pwd"><span class="cmd">pwd</span><span class="desc">Print working directory</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="ls"><span class="cmd">ls</span><span class="desc">List files &amp; folders</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="ls -la"><span class="cmd">ls <span class="arg">-la</span></span><span class="desc">List all with details</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="cd "><span class="cmd">cd <span class="arg">[dir]</span></span><span class="desc">Change directory</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="cd .."><span class="cmd">cd ..</span><span class="desc">Go up one level</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="cd ~"><span class="cmd">cd ~</span><span class="desc">Go to home directory</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="cd -"><span class="cmd">cd -</span><span class="desc">Go to previous directory</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section file">
+    <div class="section-header"><span class="cat-icon">🗂</span><span class="section-title">Files &amp; Folders</span><span class="cmd-count">8</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="touch "><span class="cmd">touch <span class="arg">[file]</span></span><span class="desc">Create empty file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="mkdir "><span class="cmd">mkdir <span class="arg">[dir]</span></span><span class="desc">Create directory</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="mkdir -p "><span class="cmd">mkdir <span class="arg">-p</span></span><span class="desc">Create nested dirs</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="cp a b"><span class="cmd">cp <span class="arg">a b</span></span><span class="desc">Copy file a to b</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="cp -r "><span class="cmd">cp <span class="arg">-r</span></span><span class="desc">Copy directory recursively</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="mv a b"><span class="cmd">mv <span class="arg">a b</span></span><span class="desc">Move or rename</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="rm "><span class="cmd">rm <span class="arg">[file]</span></span><span class="desc">Delete file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="rm -rf "><span class="cmd">rm <span class="arg">-rf</span></span><span class="desc">Delete folder — careful!</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section view">
+    <div class="section-header"><span class="cat-icon">👁</span><span class="section-title">View Content</span><span class="cmd-count">7</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="cat "><span class="cmd">cat <span class="arg">[file]</span></span><span class="desc">Print file contents</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="less "><span class="cmd">less <span class="arg">[file]</span></span><span class="desc">Scroll through file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="head "><span class="cmd">head <span class="arg">[file]</span></span><span class="desc">First 10 lines</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="tail "><span class="cmd">tail <span class="arg">[file]</span></span><span class="desc">Last 10 lines</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="tail -f "><span class="cmd">tail <span class="arg">-f</span></span><span class="desc">Follow live output</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="open ."><span class="cmd">open <span class="arg">.</span></span><span class="desc">Open folder in Finder</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="open "><span class="cmd">open <span class="arg">[file]</span></span><span class="desc">Open with default app</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section search-sec">
+    <div class="section-header"><span class="cat-icon">🔍</span><span class="section-title">Search</span><span class="cmd-count">6</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy='grep "x" file'><span class="cmd">grep <span class="arg">"x" file</span></span><span class="desc">Search text in file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="grep -r "><span class="cmd">grep <span class="arg">-r</span></span><span class="desc">Search recursively</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="grep -i "><span class="cmd">grep <span class="arg">-i</span></span><span class="desc">Case-insensitive search</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="find . -name "><span class="cmd">find <span class="arg">. -name</span></span><span class="desc">Find files by name</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="find . -type f"><span class="cmd">find <span class="arg">. -type f</span></span><span class="desc">Find only files</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="which "><span class="cmd">which <span class="arg">[cmd]</span></span><span class="desc">Find command location</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section perm">
+    <div class="section-header"><span class="cat-icon">🔐</span><span class="section-title">Permissions</span><span class="cmd-count">5</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="chmod 755 "><span class="cmd">chmod <span class="arg">755 [file]</span></span><span class="desc">Set permissions</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="chmod +x "><span class="cmd">chmod <span class="arg">+x [file]</span></span><span class="desc">Make executable</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="chown user "><span class="cmd">chown <span class="arg">user [file]</span></span><span class="desc">Change owner</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="sudo "><span class="cmd">sudo <span class="arg">[cmd]</span></span><span class="desc">Run as superuser</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="sudo !!"><span class="cmd">sudo <span class="arg">!!</span></span><span class="desc">Re-run last cmd as sudo</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section proc">
+    <div class="section-header"><span class="cat-icon">⚙️</span><span class="section-title">Processes</span><span class="cmd-count">7</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="ps aux"><span class="cmd">ps aux</span><span class="desc">List all processes</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="top"><span class="cmd">top</span><span class="desc">Live process viewer</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="kill "><span class="cmd">kill <span class="arg">[pid]</span></span><span class="desc">Kill by process ID</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="kill -9 "><span class="cmd">kill <span class="arg">-9 [pid]</span></span><span class="desc">Force kill</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="killall "><span class="cmd">killall <span class="arg">[app]</span></span><span class="desc">Kill by name</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy=""><span class="cmd">ctrl <span class="arg">+ C</span></span><span class="desc">Stop running process</span><button class="copy-btn" disabled>—</button></div>
+      <div class="cmd-row" data-copy=""><span class="cmd">ctrl <span class="arg">+ Z</span></span><span class="desc">Suspend process</span><button class="copy-btn" disabled>—</button></div>
+    </div>
+  </div>
+
+  <div class="section net">
+    <div class="section-header"><span class="cat-icon">🌐</span><span class="section-title">Network</span><span class="cmd-count">7</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="ping "><span class="cmd">ping <span class="arg">[host]</span></span><span class="desc">Ping a host</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="curl "><span class="cmd">curl <span class="arg">[url]</span></span><span class="desc">Fetch URL content</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="curl -O "><span class="cmd">curl <span class="arg">-O [url]</span></span><span class="desc">Download file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="wget "><span class="cmd">wget <span class="arg">[url]</span></span><span class="desc">Download file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="ifconfig"><span class="cmd">ifconfig</span><span class="desc">Network interfaces</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="netstat -an"><span class="cmd">netstat <span class="arg">-an</span></span><span class="desc">Active connections</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="ssh user@host"><span class="cmd">ssh <span class="arg">user@host</span></span><span class="desc">Connect via SSH</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section arc">
+    <div class="section-header"><span class="cat-icon">📦</span><span class="section-title">Archives</span><span class="cmd-count">4</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="tar -czf archive.tar.gz "><span class="cmd">tar <span class="arg">-czf</span></span><span class="desc">Create .tar.gz</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="tar -xzf "><span class="cmd">tar <span class="arg">-xzf</span></span><span class="desc">Extract .tar.gz</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="zip -r archive.zip "><span class="cmd">zip <span class="arg">-r archive folder</span></span><span class="desc">Zip folder</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="unzip "><span class="cmd">unzip <span class="arg">[file]</span></span><span class="desc">Extract zip</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section sys">
+    <div class="section-header"><span class="cat-icon">💻</span><span class="section-title">System</span><span class="cmd-count">8</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="uname -a"><span class="cmd">uname <span class="arg">-a</span></span><span class="desc">System info</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="df -h"><span class="cmd">df <span class="arg">-h</span></span><span class="desc">Disk usage</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="du -sh *"><span class="cmd">du <span class="arg">-sh *</span></span><span class="desc">Folder sizes</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="free -h"><span class="cmd">free <span class="arg">-h</span></span><span class="desc">Memory usage</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="history"><span class="cmd">history</span><span class="desc">Command history</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="clear"><span class="cmd">clear</span><span class="desc">Clear terminal</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="echo "><span class="cmd">echo <span class="arg">[text]</span></span><span class="desc">Print text</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="date"><span class="cmd">date</span><span class="desc">Current date &amp; time</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section git">
+    <div class="section-header"><span class="cat-icon">🌿</span><span class="section-title">Git Essentials</span><span class="cmd-count">8</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="git init"><span class="cmd">git init</span><span class="desc">Init new repo</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="git clone "><span class="cmd">git clone <span class="arg">[url]</span></span><span class="desc">Clone repository</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="git status"><span class="cmd">git status</span><span class="desc">Working tree status</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="git add ."><span class="cmd">git add <span class="arg">.</span></span><span class="desc">Stage all changes</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy='git commit -m ""'><span class="cmd">git commit <span class="arg">-m ""</span></span><span class="desc">Commit with message</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="git push"><span class="cmd">git push</span><span class="desc">Push to remote</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="git pull"><span class="cmd">git pull</span><span class="desc">Pull from remote</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="git log --oneline"><span class="cmd">git log <span class="arg">--oneline</span></span><span class="desc">Compact history</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+  <div class="section expo">
+    <div class="section-header"><span class="cat-icon">📱</span><span class="section-title">Expo / React Native</span><span class="cmd-count">1</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="npx expo start --clear"><span class="cmd">npx expo <span class="arg">start --clear</span></span><span class="desc">Start dev server &amp; clear cache</span><button class="copy-btn">copy</button></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-brand">terminal je t'aime</div>
+  <div class="footer-tips">
+    <span><kbd>Tab</kbd> autocomplete</span>
+    <span><kbd>↑↓</kbd> cycle history</span>
+    <span><kbd>/</kbd> search</span>
+    <span><kbd>Esc</kbd> clear search</span>
+  </div>
+</footer>
+
+<script>
+  // ── Total count ──
+  const allRows = document.querySelectorAll('.cmd-row');
+  document.getElementById('totalCount').textContent = allRows.length;
+
+  // ── Copy logic ──
+  function copyRow(row) {
+    const text = (row.dataset.copy || '').trim();
+    if (!text) return;
+    const btn = row.querySelector('.copy-btn');
+
+    const doConfirm = () => {
+      // flash the whole row green
+      row.classList.add('flash');
+      setTimeout(() => {
+        row.classList.remove('flash');
+        row.style.transition = 'background 0.14s';
+      }, 350);
+      // update button text
+      if (btn && !btn.disabled) {
+        btn.textContent = '✓ done';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1600);
+      }
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(doConfirm).catch(() => fallback(text, doConfirm));
+    } else {
+      fallback(text, doConfirm);
+    }
+  }
+
+  function fallback(text, cb) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    Object.assign(ta.style, { position:'fixed', left:'-9999px', top:'0', opacity:'0' });
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); cb(); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  // Click anywhere on the row to copy
+  document.querySelectorAll('.cmd-row').forEach(row => {
+    row.addEventListener('click', e => {
+      // if the click was directly on the copy button, let button handler run
+      if (e.target.closest('.copy-btn')) return;
+      copyRow(row);
+    });
+  });
+
+  // Copy button still works independently
+  document.querySelectorAll('.copy-btn:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      copyRow(btn.closest('.cmd-row'));
+    });
+  });
+
+  // ── Search ──
+  const searchEl  = document.getElementById('search');
+  const clearBtn  = document.getElementById('clearBtn');
+  const hint      = document.getElementById('searchHint');
+  const noResults = document.getElementById('noResults');
+  const noResQ    = document.getElementById('noResultsQuery');
+  const sections  = document.querySelectorAll('.section');
+
+  function escReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+  function applyHighlight(el, term) {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    const re = new RegExp(`(${escReg(term)})`, 'gi');
+    nodes.forEach(node => {
+      if (!re.test(node.textContent)) return;
+      const frag = document.createDocumentFragment();
+      node.textContent.split(re).forEach((part, i) => {
+        if (i % 2 === 1) { const m = document.createElement('mark'); m.textContent = part; frag.appendChild(m); }
+        else if (part) frag.appendChild(document.createTextNode(part));
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  function removeHighlights(el) {
+    el.querySelectorAll('mark').forEach(m => {
+      m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+      m.parentNode.normalize();
+    });
+  }
+
+  function doSearch(term) {
+    const q = term.toLowerCase();
+    clearBtn.classList.toggle('visible', term.length > 0);
+    hint.classList.toggle('hidden', term.length > 0);
+    let visCount = 0;
+
+    sections.forEach(sec => {
+      const rows = sec.querySelectorAll('.cmd-row');
+      let rowsVisible = 0;
+      rows.forEach(row => {
+        removeHighlights(row);
+        if (!term) { row.style.display = ''; rowsVisible++; return; }
+        const cmdTxt  = row.querySelector('.cmd').textContent.toLowerCase();
+        const descTxt = row.querySelector('.desc').textContent.toLowerCase();
+        const copyTxt = (row.dataset.copy || '').toLowerCase();
+        if (cmdTxt.includes(q) || descTxt.includes(q) || copyTxt.includes(q)) {
+          row.style.display = '';
+          applyHighlight(row.querySelector('.cmd'),  term);
+          applyHighlight(row.querySelector('.desc'), term);
+          rowsVisible++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      if (rowsVisible === 0 && term) { sec.classList.add('hidden'); }
+      else { sec.classList.remove('hidden'); visCount++; }
+    });
+
+    const empty = visCount === 0 && term;
+    noResults.classList.toggle('visible', empty);
+    if (empty) noResQ.textContent = term;
+  }
+
+  searchEl.addEventListener('input', () => doSearch(searchEl.value.trim()));
+  clearBtn.addEventListener('click', () => { searchEl.value = ''; doSearch(''); searchEl.focus(); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== searchEl) { e.preventDefault(); searchEl.focus(); }
+    if (e.key === 'Escape' && document.activeElement === searchEl) { searchEl.value = ''; doSearch(''); searchEl.blur(); }
+  });
+</script>
+</body>
+</html>
