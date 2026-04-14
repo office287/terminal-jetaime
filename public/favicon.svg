@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,700&amp;display=swap');
+    </style>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="#0e0f14"/>
+  <rect width="32" height="32" rx="6" fill="none" stroke="#2a2b3a" stroke-width="1"/>
+  <text x="5" y="23" font-family="'Playfair Display', Georgia, serif" font-size="19" font-weight="900" fill="#f5edd8">t</text>
+  <text x="16" y="23" font-family="'Playfair Display', Georgia, serif" font-size="19" font-weight="700" font-style="italic" fill="#e8455e">j</text>
+</svg>
