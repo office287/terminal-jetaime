@@ -3,7 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>terminal je t'aime</title>
+<title>terminal je t'aime — macOS Terminal Command Cheat Sheet</title>
+<meta name="description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories — navigation, Git, search, permissions, networking, and more. Search, copy, and use instantly.">
+<link rel="canonical" href="https://terminaljetaime.com/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://terminaljetaime.com/">
+<meta property="og:title" content="terminal je t'aime — macOS Terminal Command Cheat Sheet">
+<meta property="og:description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories with instant copy.">
+<meta property="og:image" content="https://terminaljetaime.com/og-image.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="terminal je t'aime — macOS Terminal Command Cheat Sheet">
+<meta name="twitter:description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories with instant copy.">
+<meta name="twitter:image" content="https://terminaljetaime.com/og-image.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "terminal je t'aime",
+  "url": "https://terminaljetaime.com",
+  "description": "A free, curated macOS terminal command cheat sheet featuring 68 essential commands across 11 categories including navigation, file management, Git, networking, and system administration.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "dateModified": "2026-04-23",
+  "keywords": "macOS terminal commands, terminal cheat sheet, mac command line, bash commands, developer tools"
+}
+</script>
+
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -36,6 +68,15 @@
     min-height: 100vh;
     padding: 0 0 64px;
     overflow-x: hidden;
+  }
+
+  .site-intro {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 16px 40px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
   }
 
   /* grain */
@@ -382,6 +423,12 @@
     font-size: 20px;
     color: var(--rouge);
   }
+  .footer-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
   .footer-tips {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
@@ -425,6 +472,8 @@
   </div>
 </header>
 
+<p class="site-intro">terminal je t'aime is a free macOS terminal command reference featuring 68 essential commands across 11 categories — navigation, file management, view content, search, permissions, processes, networking, archiving, system, Git, and Expo. Designed for developers who want fast, keyboard-driven access to the commands they actually use. Last updated: April 2026.</p>
+
 <div class="search-wrap">
   <div class="search-box">
     <span class="search-icon">/</span>
@@ -437,7 +486,7 @@
 
 <div class="grid" id="grid">
 
-  <div class="section nav">
+  <section class="section nav" id="navigation">
     <div class="section-header"><span class="cat-icon">📁</span><span class="section-title">Navigation</span><span class="cmd-count">7</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="pwd"><span class="cmd">pwd</span><span class="desc">Print working directory</span><button class="copy-btn">copy</button></div>
@@ -448,9 +497,9 @@
       <div class="cmd-row" data-copy="cd ~"><span class="cmd">cd ~</span><span class="desc">Go to home directory</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="cd -"><span class="cmd">cd -</span><span class="desc">Go to previous directory</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section file">
+  <section class="section file" id="files-folders">
     <div class="section-header"><span class="cat-icon">🗂</span><span class="section-title">Files &amp; Folders</span><span class="cmd-count">8</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="touch "><span class="cmd">touch <span class="arg">[file]</span></span><span class="desc">Create empty file</span><button class="copy-btn">copy</button></div>
@@ -462,9 +511,9 @@
       <div class="cmd-row" data-copy="rm "><span class="cmd">rm <span class="arg">[file]</span></span><span class="desc">Delete file</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="rm -rf "><span class="cmd">rm <span class="arg">-rf</span></span><span class="desc">Delete folder — careful!</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section view">
+  <section class="section view" id="view-content">
     <div class="section-header"><span class="cat-icon">👁</span><span class="section-title">View Content</span><span class="cmd-count">7</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="cat "><span class="cmd">cat <span class="arg">[file]</span></span><span class="desc">Print file contents</span><button class="copy-btn">copy</button></div>
@@ -475,9 +524,9 @@
       <div class="cmd-row" data-copy="open ."><span class="cmd">open <span class="arg">.</span></span><span class="desc">Open folder in Finder</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="open "><span class="cmd">open <span class="arg">[file]</span></span><span class="desc">Open with default app</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section search-sec">
+  <section class="section search-sec" id="search-commands">
     <div class="section-header"><span class="cat-icon">🔍</span><span class="section-title">Search</span><span class="cmd-count">6</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy='grep "x" file'><span class="cmd">grep <span class="arg">"x" file</span></span><span class="desc">Search text in file</span><button class="copy-btn">copy</button></div>
@@ -487,9 +536,9 @@
       <div class="cmd-row" data-copy="find . -type f"><span class="cmd">find <span class="arg">. -type f</span></span><span class="desc">Find only files</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="which "><span class="cmd">which <span class="arg">[cmd]</span></span><span class="desc">Find command location</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section perm">
+  <section class="section perm" id="permissions">
     <div class="section-header"><span class="cat-icon">🔐</span><span class="section-title">Permissions</span><span class="cmd-count">5</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="chmod 755 "><span class="cmd">chmod <span class="arg">755 [file]</span></span><span class="desc">Set permissions</span><button class="copy-btn">copy</button></div>
@@ -498,9 +547,9 @@
       <div class="cmd-row" data-copy="sudo "><span class="cmd">sudo <span class="arg">[cmd]</span></span><span class="desc">Run as superuser</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="sudo !!"><span class="cmd">sudo <span class="arg">!!</span></span><span class="desc">Re-run last cmd as sudo</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section proc">
+  <section class="section proc" id="processes">
     <div class="section-header"><span class="cat-icon">⚙️</span><span class="section-title">Processes</span><span class="cmd-count">7</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="ps aux"><span class="cmd">ps aux</span><span class="desc">List all processes</span><button class="copy-btn">copy</button></div>
@@ -511,9 +560,9 @@
       <div class="cmd-row" data-copy=""><span class="cmd">ctrl <span class="arg">+ C</span></span><span class="desc">Stop running process</span><button class="copy-btn" disabled>—</button></div>
       <div class="cmd-row" data-copy=""><span class="cmd">ctrl <span class="arg">+ Z</span></span><span class="desc">Suspend process</span><button class="copy-btn" disabled>—</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section net">
+  <section class="section net" id="networking">
     <div class="section-header"><span class="cat-icon">🌐</span><span class="section-title">Network</span><span class="cmd-count">7</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="ping "><span class="cmd">ping <span class="arg">[host]</span></span><span class="desc">Ping a host</span><button class="copy-btn">copy</button></div>
@@ -524,9 +573,9 @@
       <div class="cmd-row" data-copy="netstat -an"><span class="cmd">netstat <span class="arg">-an</span></span><span class="desc">Active connections</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="ssh user@host"><span class="cmd">ssh <span class="arg">user@host</span></span><span class="desc">Connect via SSH</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section arc">
+  <section class="section arc" id="archives">
     <div class="section-header"><span class="cat-icon">📦</span><span class="section-title">Archives</span><span class="cmd-count">4</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="tar -czf archive.tar.gz "><span class="cmd">tar <span class="arg">-czf</span></span><span class="desc">Create .tar.gz</span><button class="copy-btn">copy</button></div>
@@ -534,9 +583,9 @@
       <div class="cmd-row" data-copy="zip -r archive.zip "><span class="cmd">zip <span class="arg">-r archive folder</span></span><span class="desc">Zip folder</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="unzip "><span class="cmd">unzip <span class="arg">[file]</span></span><span class="desc">Extract zip</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section sys">
+  <section class="section sys" id="system">
     <div class="section-header"><span class="cat-icon">💻</span><span class="section-title">System</span><span class="cmd-count">8</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="uname -a"><span class="cmd">uname <span class="arg">-a</span></span><span class="desc">System info</span><button class="copy-btn">copy</button></div>
@@ -548,9 +597,9 @@
       <div class="cmd-row" data-copy="echo "><span class="cmd">echo <span class="arg">[text]</span></span><span class="desc">Print text</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="date"><span class="cmd">date</span><span class="desc">Current date &amp; time</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section git">
+  <section class="section git" id="git-essentials">
     <div class="section-header"><span class="cat-icon">🌿</span><span class="section-title">Git Essentials</span><span class="cmd-count">8</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="git init"><span class="cmd">git init</span><span class="desc">Init new repo</span><button class="copy-btn">copy</button></div>
@@ -562,19 +611,20 @@
       <div class="cmd-row" data-copy="git pull"><span class="cmd">git pull</span><span class="desc">Pull from remote</span><button class="copy-btn">copy</button></div>
       <div class="cmd-row" data-copy="git log --oneline"><span class="cmd">git log <span class="arg">--oneline</span></span><span class="desc">Compact history</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section expo">
+  <section class="section expo" id="expo-react-native">
     <div class="section-header"><span class="cat-icon">📱</span><span class="section-title">Expo / React Native</span><span class="cmd-count">1</span></div>
     <div class="commands">
       <div class="cmd-row" data-copy="npx expo start --clear"><span class="cmd">npx expo <span class="arg">start --clear</span></span><span class="desc">Start dev server &amp; clear cache</span><button class="copy-btn">copy</button></div>
     </div>
-  </div>
+  </section>
 
 </div>
 
 <footer>
   <div class="footer-brand">terminal je t'aime</div>
+  <div class="footer-meta">68 commands &middot; 11 categories &middot; macOS &middot; <time datetime="2026-04-23">Last updated April 2026</time></div>
   <div class="footer-tips">
     <span><kbd>Tab</kbd> autocomplete</span>
     <span><kbd>↑↓</kbd> cycle history</span>
