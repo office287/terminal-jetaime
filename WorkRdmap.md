@@ -2,14 +2,15 @@
 
 **Site:** terminaljetaime.com
 **Stack:** Node.js / Express / Vanilla HTML+CSS+JS / Railway
-**Purpose:** Free macOS terminal cheat sheet — 68 commands, 11 categories, instant copy
+**Purpose:** Free macOS terminal cheat sheet — 78 commands, 12 categories, instant copy
 
 ---
 
 ## What's Built
 
 ### Core Product
-- [x] Single-page app — 68 commands across 11 categories
+- [x] Single-page app — 78 commands across 12 categories
+- [x] Dedicated macOS-specific section (pbcopy, pbpaste, open -a, mdfind, caffeinate, say, defaults, launchctl, softwareupdate)
 - [x] Real-time search (press `/` to focus, `Esc` to clear)
 - [x] One-click copy to clipboard with flash animation
 - [x] Keyboard-first UX design
@@ -45,7 +46,7 @@
 - [x] Semantic `<section>` tags with descriptive `id` attributes per category
 - [x] Intro paragraph for AI extractability (definitional, citable)
 - [x] Stats visible: "68 commands / 11 categories"
-- [x] "Last updated: April 2026" in footer
+- [x] "Last updated: May 2026" in footer (auto-bumped on content changes)
 - [ ] Source citations for complex commands (man pages / Apple docs links)
 - [ ] Developer testimonial or quote
 - [ ] Dedicated "About" section establishing credibility
@@ -98,16 +99,16 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 - [ ] **Most-copied tracking** — which commands get copied most? Log copy events server-side (or use a lightweight analytics event). Informs future content.
 - [ ] **Category filter** — let users filter by category without searching. Tab bar or sidebar nav.
 - [ ] **"Recently copied"** — floating list or session history of last 5 commands copied. Useful for workflows.
-- [ ] **Expand command coverage** — macOS-specific commands are underrepresented. Candidates:
-  - `launchctl` — manage background services
-  - `softwareupdate` — macOS updates from CLI
-  - `pbcopy` / `pbpaste` — clipboard from terminal
-  - `open -a` — open apps from terminal
-  - `mdfind` — Spotlight from CLI
-  - `defaults write/read` — macOS preference keys
-  - `caffeinate` — prevent sleep
-  - `say` — text-to-speech from terminal
-  - `networksetup` — manage wifi/network from CLI
+- [x] **Expand command coverage** — added a dedicated macOS section with 10 commands:
+  - [x] `launchctl list` — list background services
+  - [x] `softwareupdate -l` — macOS updates from CLI
+  - [x] `pbcopy` / `pbpaste` — clipboard from terminal
+  - [x] `open -a` — open apps from terminal
+  - [x] `mdfind` — Spotlight from CLI
+  - [x] `defaults read` — read macOS preference keys
+  - [x] `caffeinate` and `caffeinate -t` — prevent sleep
+  - [x] `say` — text-to-speech from terminal
+  - [ ] `networksetup` — manage wifi/network from CLI (still to add)
 - [ ] **Expo/React Native section** — currently has only 1 command. Either expand it or rename to "JavaScript / Node" and add npm, npx, node commands.
 
 ### Priority 5 — Analytics & Monitoring
@@ -120,7 +121,7 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 ### Priority 6 — Technical Cleanup
 
 - [ ] **Move secrets out of code** — Telegram bot token and chat IDs are hardcoded in `scripts/daily-report.js`. Move to environment variables.
-- [ ] **README.md** — document what the project is, how to run locally, how to deploy. Needed before going public on GitHub.
+- [x] **README.md** — added at repo root. Documents project, stack, local setup, layout, deployment, contributing.
 - [ ] **Error handling in daily-report.js** — script fails silently if Railway API is down or Telegram delivery fails. Add try/catch + fallback logging.
 - [ ] **sitemap.xml auto-update** — `lastmod` date is hardcoded. Should update automatically when content changes or at deploy time.
 - [ ] **Multi-page routing** — before building content pages, `server.js` needs to serve different HTML per route (or use static generation). Current catch-all blocks this.
@@ -166,4 +167,4 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 | Analytics | Partial | Custom logging + Telegram reports; no GSC or click tracking |
 | GitHub presence | Not public | Blocks discoverability and Awesome list submissions |
 | Secrets management | Issue | Bot token hardcoded in script |
-| Documentation | Missing | No README |
+| Documentation | Done | README.md added |
