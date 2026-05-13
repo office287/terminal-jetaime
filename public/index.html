@@ -195,6 +195,20 @@
 }
 </script>
 
+<!-- Structured Data: Speakable — voice assistants (Google Assistant, Alexa, Siri) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "url": "https://terminaljetaime.com/",
+  "name": "terminal je t'aime — macOS Terminal Command Cheat Sheet",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".site-intro", "#faq-heading", "#faq .faq-item h3", "#faq .faq-item p"]
+  }
+}
+</script>
+
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -936,6 +950,19 @@
       <p>A single static HTML page. Fast everywhere, even on slow connections.</p>
     </div>
   </div>
+
+  <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--cream);margin-top:36px;margin-bottom:10px;font-weight:700;">Authoritative sources</h3>
+  <p style="font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.6;max-width:820px;">Commands and behaviors documented here are verified against the canonical sources below. Defer to these for edge cases and version-specific flags.</p>
+  <ul style="font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.7;max-width:820px;margin-top:8px;padding-left:18px;">
+    <li><a href="https://developer.apple.com/library/archive/documentation/OpenSource/Conceptual/ShellScripting/Introduction/Introduction.html" rel="noopener" style="color:var(--gold);">Apple — Shell Scripting Primer</a> (official macOS shell reference)</li>
+    <li><a href="https://ss64.com/mac/" rel="noopener" style="color:var(--gold);">ss64.com — macOS command index</a> (every macOS-specific command with examples)</li>
+    <li><a href="https://git-scm.com/docs" rel="noopener" style="color:var(--gold);">git-scm.com — Git Documentation</a> (canonical reference for every Git command)</li>
+    <li><a href="https://docs.npmjs.com/cli/v10/commands" rel="noopener" style="color:var(--gold);">docs.npmjs.com — npm CLI commands</a> (official npm command reference)</li>
+    <li><a href="https://www.gnu.org/software/coreutils/manual/coreutils.html" rel="noopener" style="color:var(--gold);">GNU Coreutils Manual</a> (cp, mv, ls, rm, cat, head, tail, chmod, chown — base reference)</li>
+    <li><a href="https://www.gnu.org/software/grep/manual/grep.html" rel="noopener" style="color:var(--gold);">GNU grep manual</a> (regex syntax, recursive search, flags)</li>
+    <li><a href="https://man7.org/linux/man-pages/man1/find.1.html" rel="noopener" style="color:var(--gold);">find(1) man page</a> (predicates, expressions, actions)</li>
+    <li><a href="https://www.openssh.com/manual.html" rel="noopener" style="color:var(--gold);">OpenSSH manuals</a> (ssh, scp, ssh-keygen — the protocol in detail)</li>
+  </ul>
 </section>
 
 <section class="content-block" id="faq" aria-labelledby="faq-heading">
