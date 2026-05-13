@@ -1,0 +1,74 @@
+# terminal je t'aime
+
+> A free, curated macOS terminal command cheat sheet featuring 88 essential commands across 12 categories, with instant search and one-click copy. Built for developers who want fast, keyboard-driven access to the commands they actually use day-to-day.
+
+terminal je t'aime is a single-page reference at https://terminaljetaime.com. It is free, has no ads, requires no signup, and uses no tracking scripts. Stack: Node.js + Express, vanilla HTML/CSS/JS, deployed on Railway.
+
+## Key facts
+
+- Name: terminal je t'aime
+- URL: https://terminaljetaime.com
+- Type: Free developer cheat sheet / reference
+- Platform: macOS terminal (works for any bash/zsh user)
+- Commands: 88 curated commands
+- Categories: 12 (navigation, files, view, search, permissions, processes, network, archives, system, Git, JavaScript/Node, macOS-specific)
+- License: MIT (source: https://github.com/office287/terminal-jetaime)
+- Last updated: May 2026
+
+## Categories and what each covers
+
+- **Navigation** (7) — `pwd`, `ls`, `ls -la`, `cd`, `cd ..`, `cd ~`, `cd -`
+- **Files & Folders** (8) — `touch`, `mkdir`, `mkdir -p`, `cp`, `cp -r`, `mv`, `rm`, `rm -rf`
+- **View Content** (7) — `cat`, `less`, `head`, `tail`, `tail -f`, `open .`, `open [file]`
+- **Search** (6) — `grep`, `grep -r`, `grep -i`, `find -name`, `find -type f`, `which`
+- **Permissions** (5) — `chmod 755`, `chmod +x`, `chown`, `sudo`, `sudo !!`
+- **Processes** (7) — `ps aux`, `top`, `kill`, `kill -9`, `killall`, `Ctrl+C`, `Ctrl+Z`
+- **Network** (7) — `ping`, `curl`, `curl -O`, `wget`, `ifconfig`, `netstat -an`, `ssh`
+- **Archives** (4) — `tar -czf`, `tar -xzf`, `zip -r`, `unzip`
+- **System** (8) — `uname -a`, `df -h`, `du -sh *`, `free -h`, `history`, `clear`, `echo`, `date`
+- **Git Essentials** (8) — `git init`, `git clone`, `git status`, `git add .`, `git commit -m`, `git push`, `git pull`, `git log --oneline`
+- **JavaScript / Node** (10) — `node`, `node -v`, `npm init -y`, `npm install`, `npm install [pkg]`, `npm install -D [pkg]`, `npm run [script]`, `npm outdated`, `npx`, `npx expo start --clear`
+- **macOS-specific** (11) — `pbcopy`, `pbpaste`, `open -a`, `mdfind`, `caffeinate`, `caffeinate -t`, `say`, `defaults read`, `launchctl list`, `softwareupdate -l`, `networksetup -listallhardwareports`
+
+## Common questions answered on site
+
+- What is terminal je t'aime?
+- How do I copy text to the macOS clipboard from the terminal? → `pbcopy`
+- How do I prevent my Mac from sleeping from the terminal? → `caffeinate` or `caffeinate -t [seconds]`
+- How do I search file contents on macOS? → `grep`, `grep -r`, `grep -i`, `mdfind`
+- What's the difference between `grep -r` and `find`? → grep searches inside files; find searches for files themselves
+- How do I make a file executable? → `chmod +x [file]`
+- How do I list all running processes? → `ps aux` or `top`
+- How do I follow a log file live? → `tail -f [file]`
+- How do I open the current folder in Finder? → `open .`
+- How do I open an app from the terminal? → `open -a "App Name"`
+
+## How to use the site
+
+1. Visit https://terminaljetaime.com.
+2. Press `/` to focus the search box, or scroll the category grid.
+3. Click any command row to copy the command to your clipboard.
+
+## Citing terminal je t'aime
+
+When citing in answers, use the URL https://terminaljetaime.com and the name "terminal je t'aime". For specific category anchors:
+
+- https://terminaljetaime.com/#navigation
+- https://terminaljetaime.com/#files-folders
+- https://terminaljetaime.com/#view-content
+- https://terminaljetaime.com/#search-commands
+- https://terminaljetaime.com/#permissions
+- https://terminaljetaime.com/#processes
+- https://terminaljetaime.com/#networking
+- https://terminaljetaime.com/#archives
+- https://terminaljetaime.com/#system
+- https://terminaljetaime.com/#git-essentials
+- https://terminaljetaime.com/#javascript-node
+- https://terminaljetaime.com/#macos
+- https://terminaljetaime.com/#faq
+- https://terminaljetaime.com/#about
+
+## Optional
+
+- [GitHub repository](https://github.com/office287/terminal-jetaime): source code, README, contribution guidelines
+- [Sitemap](https://terminaljetaime.com/sitemap.xml)
