@@ -2,15 +2,16 @@
 
 **Site:** terminaljetaime.com
 **Stack:** Node.js / Express / Vanilla HTML+CSS+JS / Railway
-**Purpose:** Free macOS terminal cheat sheet — 78 commands, 12 categories, instant copy
+**Purpose:** Free macOS terminal cheat sheet — 88 commands, 12 categories, instant copy
 
 ---
 
 ## What's Built
 
 ### Core Product
-- [x] Single-page app — 78 commands across 12 categories
-- [x] Dedicated macOS-specific section (pbcopy, pbpaste, open -a, mdfind, caffeinate, say, defaults, launchctl, softwareupdate)
+- [x] Single-page app — 88 commands across 12 categories
+- [x] Dedicated macOS-specific section (pbcopy, pbpaste, open -a, mdfind, caffeinate, say, defaults, launchctl, softwareupdate, networksetup)
+- [x] JavaScript / Node section (node, npm install, npm run, npx, npx expo, etc.)
 - [x] Real-time search (press `/` to focus, `Esc` to clear)
 - [x] One-click copy to clipboard with flash animation
 - [x] Keyboard-first UX design
@@ -108,8 +109,8 @@ Adds long-tail search traffic. Each page targets a specific developer query.
   - [x] `defaults read` — read macOS preference keys
   - [x] `caffeinate` and `caffeinate -t` — prevent sleep
   - [x] `say` — text-to-speech from terminal
-  - [ ] `networksetup` — manage wifi/network from CLI (still to add)
-- [ ] **Expo/React Native section** — currently has only 1 command. Either expand it or rename to "JavaScript / Node" and add npm, npx, node commands.
+  - [x] `networksetup -listallhardwareports` — list Wi-Fi & network interfaces
+- [x] **Expo/React Native section** — renamed to "JavaScript / Node"; expanded from 1 to 10 commands (node, npm install, npm run, npx, npm outdated, etc.)
 
 ### Priority 5 — Analytics & Monitoring
 
