@@ -4,20 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>terminal je t'aime — macOS Terminal Command Cheat Sheet</title>
-<meta name="description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories — navigation, Git, search, permissions, networking, and more. Search, copy, and use instantly.">
+<meta name="description" content="A beautifully curated macOS terminal command cheat sheet. 88 essential commands across 12 categories — navigation, Git, search, permissions, networking, JavaScript/Node, macOS-specific, and more. Search, copy, and use instantly.">
 <link rel="canonical" href="https://terminaljetaime.com/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://terminaljetaime.com/">
 <meta property="og:title" content="terminal je t'aime — macOS Terminal Command Cheat Sheet">
-<meta property="og:description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories with instant copy.">
+<meta property="og:description" content="A beautifully curated macOS terminal command cheat sheet. 88 essential commands across 12 categories with instant copy.">
 <meta property="og:image" content="https://terminaljetaime.com/og-image.png">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="terminal je t'aime — macOS Terminal Command Cheat Sheet">
-<meta name="twitter:description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories with instant copy.">
+<meta name="twitter:description" content="A beautifully curated macOS terminal command cheat sheet. 88 essential commands across 12 categories with instant copy.">
 <meta name="twitter:image" content="https://terminaljetaime.com/og-image.png">
 
 <!-- Structured Data -->
@@ -27,11 +27,11 @@
   "@type": "WebApplication",
   "name": "terminal je t'aime",
   "url": "https://terminaljetaime.com",
-  "description": "A free, curated macOS terminal command cheat sheet featuring 68 essential commands across 11 categories including navigation, file management, Git, networking, and system administration.",
+  "description": "A free, curated macOS terminal command cheat sheet featuring 88 essential commands across 12 categories including navigation, file management, Git, networking, system administration, JavaScript/Node tooling, and macOS-specific tools.",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "dateModified": "2026-04-23",
+  "dateModified": "2026-05-13",
   "keywords": "macOS terminal commands, terminal cheat sheet, mac command line, bash commands, developer tools"
 }
 </script>
@@ -403,7 +403,8 @@
   .arc        .section-title { color: var(--gold); }
   .sys        .section-title { color: #94a3b8; }
   .git        .section-title { color: var(--rouge); }
-  .expo       .section-title { color: var(--lavender); }
+  .js         .section-title { color: var(--lavender); }
+  .macos      .section-title { color: #7dd3fc; }
 
   /* ══ FOOTER ══ */
   footer {
@@ -472,7 +473,7 @@
   </div>
 </header>
 
-<p class="site-intro">terminal je t'aime is a free macOS terminal command reference featuring 68 essential commands across 11 categories — navigation, file management, view content, search, permissions, processes, networking, archiving, system, Git, and Expo. Designed for developers who want fast, keyboard-driven access to the commands they actually use. Last updated: April 2026.</p>
+<p class="site-intro">terminal je t'aime is a free macOS terminal command reference featuring 88 essential commands across 12 categories — navigation, file management, view content, search, permissions, processes, networking, archiving, system, Git, JavaScript/Node, and macOS-specific tools. Designed for developers who want fast, keyboard-driven access to the commands they actually use. Last updated: May 2026.</p>
 
 <div class="search-wrap">
   <div class="search-box">
@@ -613,10 +614,36 @@
     </div>
   </section>
 
-  <section class="section expo" id="expo-react-native">
-    <div class="section-header"><span class="cat-icon">📱</span><span class="section-title">Expo / React Native</span><span class="cmd-count">1</span></div>
+  <section class="section js" id="javascript-node">
+    <div class="section-header"><span class="cat-icon">⬢</span><span class="section-title">JavaScript / Node</span><span class="cmd-count">10</span></div>
     <div class="commands">
-      <div class="cmd-row" data-copy="npx expo start --clear"><span class="cmd">npx expo <span class="arg">start --clear</span></span><span class="desc">Start dev server &amp; clear cache</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="node "><span class="cmd">node <span class="arg">[file]</span></span><span class="desc">Run JavaScript file</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="node -v"><span class="cmd">node <span class="arg">-v</span></span><span class="desc">Show Node version</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npm init -y"><span class="cmd">npm <span class="arg">init -y</span></span><span class="desc">Create package.json</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npm install"><span class="cmd">npm <span class="arg">install</span></span><span class="desc">Install dependencies</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npm install "><span class="cmd">npm install <span class="arg">[pkg]</span></span><span class="desc">Install a package</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npm install -D "><span class="cmd">npm install <span class="arg">-D [pkg]</span></span><span class="desc">Install as dev dependency</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npm run "><span class="cmd">npm run <span class="arg">[script]</span></span><span class="desc">Run a package script</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npm outdated"><span class="cmd">npm <span class="arg">outdated</span></span><span class="desc">List outdated dependencies</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npx "><span class="cmd">npx <span class="arg">[pkg]</span></span><span class="desc">Run package without installing</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="npx expo start --clear"><span class="cmd">npx expo <span class="arg">start --clear</span></span><span class="desc">Expo: start dev server &amp; clear cache</span><button class="copy-btn">copy</button></div>
+    </div>
+  </section>
+
+  <section class="section macos" id="macos">
+    <div class="section-header"><span class="cat-icon">🍎</span><span class="section-title">macOS</span><span class="cmd-count">11</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="pbcopy"><span class="cmd">pbcopy</span><span class="desc">Copy stdin to clipboard</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="pbpaste"><span class="cmd">pbpaste</span><span class="desc">Paste clipboard to stdout</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="open -a "><span class="cmd">open <span class="arg">-a "App"</span></span><span class="desc">Open app by name</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="mdfind "><span class="cmd">mdfind <span class="arg">"query"</span></span><span class="desc">Spotlight search from CLI</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="caffeinate"><span class="cmd">caffeinate</span><span class="desc">Prevent sleep</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="caffeinate -t "><span class="cmd">caffeinate <span class="arg">-t [sec]</span></span><span class="desc">Prevent sleep for N seconds</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="say "><span class="cmd">say <span class="arg">"text"</span></span><span class="desc">Text-to-speech</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="defaults read "><span class="cmd">defaults <span class="arg">read [domain]</span></span><span class="desc">Read app preference</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="launchctl list"><span class="cmd">launchctl <span class="arg">list</span></span><span class="desc">List launch agents</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="softwareupdate -l"><span class="cmd">softwareupdate <span class="arg">-l</span></span><span class="desc">Check for macOS updates</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="networksetup -listallhardwareports"><span class="cmd">networksetup <span class="arg">-listallhardwareports</span></span><span class="desc">List Wi-Fi &amp; network interfaces</span><button class="copy-btn">copy</button></div>
     </div>
   </section>
 
@@ -624,7 +651,7 @@
 
 <footer>
   <div class="footer-brand">terminal je t'aime</div>
-  <div class="footer-meta">68 commands &middot; 11 categories &middot; macOS &middot; <time datetime="2026-04-23">Last updated April 2026</time></div>
+  <div class="footer-meta">88 commands &middot; 12 categories &middot; macOS &middot; <time datetime="2026-05-13">Last updated May 2026</time></div>
   <div class="footer-tips">
     <span><kbd>Tab</kbd> autocomplete</span>
     <span><kbd>↑↓</kbd> cycle history</span>
