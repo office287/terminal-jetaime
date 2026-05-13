@@ -4,20 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>terminal je t'aime — macOS Terminal Command Cheat Sheet</title>
-<meta name="description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories — navigation, Git, search, permissions, networking, and more. Search, copy, and use instantly.">
+<meta name="description" content="A beautifully curated macOS terminal command cheat sheet. 78 essential commands across 12 categories — navigation, Git, search, permissions, networking, macOS-specific, and more. Search, copy, and use instantly.">
 <link rel="canonical" href="https://terminaljetaime.com/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://terminaljetaime.com/">
 <meta property="og:title" content="terminal je t'aime — macOS Terminal Command Cheat Sheet">
-<meta property="og:description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories with instant copy.">
+<meta property="og:description" content="A beautifully curated macOS terminal command cheat sheet. 78 essential commands across 12 categories with instant copy.">
 <meta property="og:image" content="https://terminaljetaime.com/og-image.png">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="terminal je t'aime — macOS Terminal Command Cheat Sheet">
-<meta name="twitter:description" content="A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories with instant copy.">
+<meta name="twitter:description" content="A beautifully curated macOS terminal command cheat sheet. 78 essential commands across 12 categories with instant copy.">
 <meta name="twitter:image" content="https://terminaljetaime.com/og-image.png">
 
 <!-- Structured Data -->
@@ -27,11 +27,11 @@
   "@type": "WebApplication",
   "name": "terminal je t'aime",
   "url": "https://terminaljetaime.com",
-  "description": "A free, curated macOS terminal command cheat sheet featuring 68 essential commands across 11 categories including navigation, file management, Git, networking, and system administration.",
+  "description": "A free, curated macOS terminal command cheat sheet featuring 78 essential commands across 12 categories including navigation, file management, Git, networking, system administration, and macOS-specific tools.",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "dateModified": "2026-04-23",
+  "dateModified": "2026-05-13",
   "keywords": "macOS terminal commands, terminal cheat sheet, mac command line, bash commands, developer tools"
 }
 </script>
@@ -404,6 +404,7 @@
   .sys        .section-title { color: #94a3b8; }
   .git        .section-title { color: var(--rouge); }
   .expo       .section-title { color: var(--lavender); }
+  .macos      .section-title { color: #7dd3fc; }
 
   /* ══ FOOTER ══ */
   footer {
@@ -472,7 +473,7 @@
   </div>
 </header>
 
-<p class="site-intro">terminal je t'aime is a free macOS terminal command reference featuring 68 essential commands across 11 categories — navigation, file management, view content, search, permissions, processes, networking, archiving, system, Git, and Expo. Designed for developers who want fast, keyboard-driven access to the commands they actually use. Last updated: April 2026.</p>
+<p class="site-intro">terminal je t'aime is a free macOS terminal command reference featuring 78 essential commands across 12 categories — navigation, file management, view content, search, permissions, processes, networking, archiving, system, Git, Expo, and macOS-specific tools. Designed for developers who want fast, keyboard-driven access to the commands they actually use. Last updated: May 2026.</p>
 
 <div class="search-wrap">
   <div class="search-box">
@@ -620,11 +621,27 @@
     </div>
   </section>
 
+  <section class="section macos" id="macos">
+    <div class="section-header"><span class="cat-icon">🍎</span><span class="section-title">macOS</span><span class="cmd-count">10</span></div>
+    <div class="commands">
+      <div class="cmd-row" data-copy="pbcopy"><span class="cmd">pbcopy</span><span class="desc">Copy stdin to clipboard</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="pbpaste"><span class="cmd">pbpaste</span><span class="desc">Paste clipboard to stdout</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="open -a "><span class="cmd">open <span class="arg">-a "App"</span></span><span class="desc">Open app by name</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="mdfind "><span class="cmd">mdfind <span class="arg">"query"</span></span><span class="desc">Spotlight search from CLI</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="caffeinate"><span class="cmd">caffeinate</span><span class="desc">Prevent sleep</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="caffeinate -t "><span class="cmd">caffeinate <span class="arg">-t [sec]</span></span><span class="desc">Prevent sleep for N seconds</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="say "><span class="cmd">say <span class="arg">"text"</span></span><span class="desc">Text-to-speech</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="defaults read "><span class="cmd">defaults <span class="arg">read [domain]</span></span><span class="desc">Read app preference</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="launchctl list"><span class="cmd">launchctl <span class="arg">list</span></span><span class="desc">List launch agents</span><button class="copy-btn">copy</button></div>
+      <div class="cmd-row" data-copy="softwareupdate -l"><span class="cmd">softwareupdate <span class="arg">-l</span></span><span class="desc">Check for macOS updates</span><button class="copy-btn">copy</button></div>
+    </div>
+  </section>
+
 </div>
 
 <footer>
   <div class="footer-brand">terminal je t'aime</div>
-  <div class="footer-meta">68 commands &middot; 11 categories &middot; macOS &middot; <time datetime="2026-04-23">Last updated April 2026</time></div>
+  <div class="footer-meta">78 commands &middot; 12 categories &middot; macOS &middot; <time datetime="2026-05-13">Last updated May 2026</time></div>
   <div class="footer-tips">
     <span><kbd>Tab</kbd> autocomplete</span>
     <span><kbd>↑↓</kbd> cycle history</span>
