@@ -6,6 +6,22 @@
 
 ---
 
+## Recent Progress (2026-05-13)
+
+PR open and awaiting merge: [office287/terminal-jetaime#2](https://github.com/office287/terminal-jetaime/pull/2) — branch `claude/implement-notifications-V7AKz` → `main`. Once merged, Railway redeploys terminaljetaime.com.
+
+Shipped on this branch:
+- `README.md` added (unblocks making repo public)
+- New **macOS** section — 11 commands: `pbcopy`, `pbpaste`, `open -a`, `mdfind`, `caffeinate`, `caffeinate -t`, `say`, `defaults read`, `launchctl list`, `softwareupdate -l`, `networksetup -listallhardwareports`
+- Renamed **Expo / React Native** → **JavaScript / Node** (1 → 10 commands): `node`, `node -v`, `npm init -y`, `npm install`, `npm install <pkg>`, `npm install -D`, `npm run`, `npm outdated`, `npx`, `npx expo start --clear`
+- Bumped counts from 68/11 → **88 commands / 12 categories** across meta tags, JSON-LD, intro, footer
+- `dateModified` and `sitemap.xml` `lastmod` bumped to 2026-05-13
+- Untracked stray `.DS_Store`
+
+CI: no checks configured on the repo, so PR is ready to merge whenever.
+
+---
+
 ## What's Built
 
 ### Core Product
@@ -46,7 +62,7 @@
 ### SEO — Phase 2: AI SEO (Partial)
 - [x] Semantic `<section>` tags with descriptive `id` attributes per category
 - [x] Intro paragraph for AI extractability (definitional, citable)
-- [x] Stats visible: "68 commands / 11 categories"
+- [x] Stats visible: "88 commands / 12 categories"
 - [x] "Last updated: May 2026" in footer (auto-bumped on content changes)
 - [ ] Source citations for complex commands (man pages / Apple docs links)
 - [ ] Developer testimonial or quote
@@ -60,7 +76,7 @@
 
 The product is built. Nobody knows it exists. This is the biggest gap.
 
-- [ ] **Make GitHub repo public** — add README with project description, setup instructions, screenshot. Indexes on Google, gets linked from Awesome lists, gives social proof.
+- [ ] **Make GitHub repo public** — README is now in place; remaining step is flipping repo visibility to public on GitHub. Indexes on Google, gets linked from Awesome lists, gives social proof.
 - [ ] **Submit to Product Hunt** — free developer tools do well. Schedule for a Tuesday/Wednesday morning ET. Write a proper tagline and first comment.
 - [ ] **Post on Reddit** — r/commandline, r/macOS, r/webdev, r/programming. Each sub needs a tailored post (not cross-post spam). Lead with the value, not the link.
 - [ ] **Hacker News "Show HN"** — format: `Show HN: Terminal Je T'aime – macOS terminal cheat sheet with instant copy`. Post ~9am ET on a weekday.
@@ -100,7 +116,7 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 - [ ] **Most-copied tracking** — which commands get copied most? Log copy events server-side (or use a lightweight analytics event). Informs future content.
 - [ ] **Category filter** — let users filter by category without searching. Tab bar or sidebar nav.
 - [ ] **"Recently copied"** — floating list or session history of last 5 commands copied. Useful for workflows.
-- [x] **Expand command coverage** — added a dedicated macOS section with 10 commands:
+- [x] **Expand command coverage** — added a dedicated macOS section with 11 commands:
   - [x] `launchctl list` — list background services
   - [x] `softwareupdate -l` — macOS updates from CLI
   - [x] `pbcopy` / `pbpaste` — clipboard from terminal
