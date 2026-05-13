@@ -17,6 +17,7 @@ Shipped on this branch:
 - Bumped counts from 68/11 → **88 commands / 12 categories** across meta tags, JSON-LD, intro, footer
 - `dateModified` and `sitemap.xml` `lastmod` bumped to 2026-05-13
 - Untracked stray `.DS_Store`
+- **Copy-event tracking**: new `POST /api/copy` endpoint in `server.js` + `navigator.sendBeacon` from `index.html` on every successful copy. Logs `[copy] <ts> <ip> [<geo>] "<cmd>"` to stdout (Railway captures it). Body capped at 256 B server-side / 100-char cmd cap client-side. Empty bodies return 204 with no log line.
 
 CI: no checks configured on the repo, so PR is ready to merge whenever.
 
@@ -113,7 +114,7 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 
 ### Priority 4 — Feature Improvements
 
-- [ ] **Most-copied tracking** — which commands get copied most? Log copy events server-side (or use a lightweight analytics event). Informs future content.
+- [x] **Most-copied tracking** — `/api/copy` endpoint added in `server.js`; client fires `navigator.sendBeacon('/api/copy', cmd)` on every successful copy. Logged with geo via existing geoip-lite path. Look for `[copy] ...` lines in Railway logs.
 - [ ] **Category filter** — let users filter by category without searching. Tab bar or sidebar nav.
 - [ ] **"Recently copied"** — floating list or session history of last 5 commands copied. Useful for workflows.
 - [x] **Expand command coverage** — added a dedicated macOS section with 11 commands:
@@ -130,7 +131,7 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 
 ### Priority 5 — Analytics & Monitoring
 
-- [ ] **Click/copy event tracking** — log which command was copied (anonymized). Store in server logs or a lightweight DB. Lets you see what's actually useful.
+- [x] **Click/copy event tracking** — `[copy] <iso-timestamp> <ip> [<geo>] "<cmd>"` log lines written on each successful copy via `/api/copy`. Sanitized + 100-char cap. Easy to grep / pipe into the daily-report flow.
 - [ ] **Search term logging** — what are people searching for that returns no results? Fill those gaps with new commands.
 - [ ] **Plausible or Umami** — privacy-respecting web analytics dashboard (vs. current Telegram PDFs which are useful but manual to query).
 - [ ] **AI citation monitoring** — monthly manual check: search "macOS terminal cheat sheet" on ChatGPT, Perplexity, Google AI Overviews. Track if the site appears.

@@ -666,12 +666,24 @@
   document.getElementById('totalCount').textContent = allRows.length;
 
   // ── Copy logic ──
+  function reportCopy(text) {
+    try {
+      const payload = text.slice(0, 100);
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/copy', new Blob([payload], { type: 'text/plain' }));
+      } else {
+        fetch('/api/copy', { method: 'POST', body: payload, headers: { 'Content-Type': 'text/plain' }, keepalive: true }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
   function copyRow(row) {
     const text = (row.dataset.copy || '').trim();
     if (!text) return;
     const btn = row.querySelector('.copy-btn');
 
     const doConfirm = () => {
+      reportCopy(text);
       // flash the whole row green
       row.classList.add('flash');
       setTimeout(() => {
