@@ -25,6 +25,27 @@ const REPORTS_DIR = path.join(ROOT, 'reports');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const INDEX_HTML = path.join(PUBLIC_DIR, 'index.html');
 
+// Lightweight .env loader — checks .env.local then .env, populates process.env
+// for keys that are not already set. No dependency on dotenv.
+function loadEnvFile(file) {
+  if (!fs.existsSync(file)) return;
+  const text = fs.readFileSync(file, 'utf8');
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq === -1) continue;
+    const key = line.slice(0, eq).trim();
+    let val = line.slice(eq + 1).trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+loadEnvFile(path.join(ROOT, '.env.local'));
+loadEnvFile(path.join(ROOT, '.env'));
+
 const ARGS = new Set(process.argv.slice(2));
 const FORCE = ARGS.has('--force');
 const PRINT = ARGS.has('--print');
