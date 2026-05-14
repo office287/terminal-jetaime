@@ -43,14 +43,37 @@
 - [x] robots.txt — explicit allowlist for AI bots (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, anthropic-ai)
 - [x] sitemap.xml
 
-### SEO — Phase 2: AI SEO (Partial)
+### SEO — Phase 2: AI SEO (Complete)
 - [x] Semantic `<section>` tags with descriptive `id` attributes per category
 - [x] Intro paragraph for AI extractability (definitional, citable)
-- [x] Stats visible: "68 commands / 11 categories"
-- [x] "Last updated: May 2026" in footer (auto-bumped on content changes)
-- [ ] Source citations for complex commands (man pages / Apple docs links)
-- [ ] Developer testimonial or quote
-- [ ] Dedicated "About" section establishing credibility
+- [x] Stats visible: "88 commands / 12 categories"
+- [x] "Last updated: <Month YYYY>" in footer (auto-bumped nightly by `scripts/nightly-improve.js`)
+- [x] Source citations for complex commands (man pages / Apple docs links)
+- [x] Dedicated "About" section establishing credibility (with stat cards)
+- [x] Every category title promoted from `<span>` to `<h2>` for crawler hierarchy
+- [ ] Developer testimonial or quote (would lift AI citation by ~30% per Princeton GEO research)
+
+### SEO — Phase 2.5: AEO foundation (Complete)
+- [x] **FAQPage JSON-LD** — 10 Q&As targeting Google AI Overviews and Perplexity
+- [x] **Visible FAQ block** with microdata (`itemscope` / `itemprop`) for redundancy
+- [x] **HowTo JSON-LD** — covers the search-and-copy flow
+- [x] **BreadcrumbList JSON-LD**
+- [x] **Speakable schema** — voice-assistant ready
+- [x] Extended `WebApplication` schema (featureList, screenshot, publisher Organization, inLanguage, isAccessibleForFree, datePublished)
+- [x] **`llms.txt`** at site root per llmstxt.org spec
+- [x] **robots.txt expanded to 24+ explicit user-agents** — all major AI crawlers (OAI-SearchBot, Applebot-Extended, Meta-ExternalAgent, Amazonbot, Bytespider, CCBot, Diffbot, MistralAI-User, etc.)
+- [x] sitemap.xml lists FAQ + About + category anchor URLs
+
+### Nightly Automation Pipeline (Complete)
+- [x] **`scripts/nightly-improve.js`** — deterministic SEO/AEO refresh (sitemap `<lastmod>`, JSON-LD `dateModified`, visible "Last updated" stamp, llms.txt date)
+- [x] **`scripts/morning-report.js`** — site audit + 16-point health check + commits-in-window + "What was done tonight" + "Your action items" → Markdown file at `reports/YYYY-MM-DD-morning.md`
+- [x] **Telegram delivery** — auto-sends each report to chat IDs in `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` (reads `.env.local` locally; uses GitHub repo secrets in CI)
+- [x] **`.github/workflows/nightly-seo.yml`** — cron at `0 4 * * *` UTC; runs improve → report → push back to main
+- [x] **`data/action-items.json`** — tracked human TODOs surfaced in every report (top 5)
+- [x] **Claude Code SessionStart hook** — `.claude/settings.json` regenerates the report whenever the repo is opened in Claude Code
+- [x] **npm scripts:** `npm run nightly`, `npm run improve`, `npm run report`, `npm run report:force`, `npm run report:no-send`
+- [x] **`.env.local` auto-loader** in the report script (no `dotenv` dep)
+- [x] **Verified end-to-end** — Telegram messages confirmed delivered
 
 ---
 
@@ -69,7 +92,7 @@ The product is built. Nobody knows it exists. This is the biggest gap.
 
 ### Priority 2 — Google Search Console
 
-Currently flying blind on search impressions.
+Currently flying blind on search impressions. _Tracked as open items in `data/action-items.json` so they surface in every nightly Telegram report._
 
 - [ ] Register terminaljetaime.com on Google Search Console
 - [ ] Submit sitemap.xml via GSC
@@ -114,6 +137,7 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 
 ### Priority 5 — Analytics & Monitoring
 
+- [x] **Daily SEO/AEO health-check report** — `scripts/morning-report.js` audits 16 signals nightly and DMs them to Telegram (see Nightly Automation Pipeline above).
 - [ ] **Click/copy event tracking** — log which command was copied (anonymized). Store in server logs or a lightweight DB. Lets you see what's actually useful.
 - [ ] **Search term logging** — what are people searching for that returns no results? Fill those gaps with new commands.
 - [ ] **Plausible or Umami** — privacy-respecting web analytics dashboard (vs. current Telegram PDFs which are useful but manual to query).
@@ -121,10 +145,11 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 
 ### Priority 6 — Technical Cleanup
 
-- [ ] **Move secrets out of code** — Telegram bot token and chat IDs are hardcoded in `scripts/daily-report.js`. Move to environment variables.
+- [x] **`morning-report.js` secrets via env vars** — reads `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` from `.env.local` (gitignored) or GitHub repo secrets. Old `daily-report.js` traffic script still has hardcoded creds — needs migrating.
+- [ ] **Move legacy `scripts/daily-report.js` secrets to env vars** — Telegram bot token and chat IDs are still hardcoded there.
 - [x] **README.md** — added at repo root. Documents project, stack, local setup, layout, deployment, contributing.
 - [ ] **Error handling in daily-report.js** — script fails silently if Railway API is down or Telegram delivery fails. Add try/catch + fallback logging.
-- [ ] **sitemap.xml auto-update** — `lastmod` date is hardcoded. Should update automatically when content changes or at deploy time.
+- [x] **sitemap.xml auto-update** — `<lastmod>` is now bumped to today every night by `scripts/nightly-improve.js`.
 - [ ] **Multi-page routing** — before building content pages, `server.js` needs to serve different HTML per route (or use static generation). Current catch-all blocks this.
 
 ---
@@ -161,11 +186,13 @@ Adds long-tail search traffic. Each page targets a specific developer query.
 | Area | Status | Notes |
 |------|--------|-------|
 | Core product | Done | Solid, polished, fast |
-| SEO technical | Done | All Phase 1 complete |
-| SEO AI structure | Partial | Structure done, citations/testimonials missing |
-| SEO content pages | Not started | Needs multi-page routing first |
-| Distribution | Not started | Biggest gap — nobody knows this exists |
-| Analytics | Partial | Custom logging + Telegram reports; no GSC or click tracking |
-| GitHub presence | Not public | Blocks discoverability and Awesome list submissions |
-| Secrets management | Issue | Bot token hardcoded in script |
-| Documentation | Done | README.md added |
+| SEO technical (Phase 1) | Done | All meta, OG, schema basics complete |
+| SEO AI structure (Phase 2) | Done | Semantic h2s, intro, About + stats, source citations |
+| AEO foundation (Phase 2.5) | Done | FAQ + HowTo + BreadcrumbList + Speakable schema, llms.txt, broad AI-bot allowlist |
+| SEO content pages (Phase 3) | Not started | Needs multi-page routing first |
+| Distribution | Not started | Biggest gap — nobody knows this exists. Tracked in `data/action-items.json`. |
+| Analytics | Partial | Nightly Telegram audit + traffic PDF; no GSC, Plausible, or click tracking |
+| Nightly automation pipeline | Done | GitHub Actions cron, deterministic refresh, audit + Telegram report. Verified working. |
+| GitHub presence | Private | Blocks Awesome-list submissions. Tracked as open action item. |
+| Secrets management | Partial | New scripts use env vars + .env.local; legacy `daily-report.js` still hardcoded |
+| Documentation | Done | README.md + `scripts/README.md` cover the pipeline end-to-end |
