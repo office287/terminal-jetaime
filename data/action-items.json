@@ -1,0 +1,75 @@
+{
+  "_comment": "Things only the user can do (require human accounts, decisions, or external actions). The nightly report surfaces the open ones in Telegram.",
+  "items": [
+    {
+      "id": "gsc-register",
+      "title": "Register terminaljetaime.com on Google Search Console",
+      "why": "Without GSC you can't see real impressions, clicks, or ranking. Free, ~10 min.",
+      "url": "https://search.google.com/search-console",
+      "status": "open"
+    },
+    {
+      "id": "gsc-submit-sitemap",
+      "title": "Submit sitemap.xml in Google Search Console",
+      "why": "Tells Google to index the FAQ, About, and category anchors faster.",
+      "url": "https://terminaljetaime.com/sitemap.xml",
+      "status": "open"
+    },
+    {
+      "id": "google-alerts",
+      "title": "Set up Google Alerts for \"terminal je t'aime\"",
+      "why": "Get an email anytime someone mentions the brand. Helps you reply to community posts and track citation.",
+      "url": "https://www.google.com/alerts",
+      "status": "open"
+    },
+    {
+      "id": "github-public",
+      "title": "Make the GitHub repo public",
+      "why": "Indexes on Google, listed by 'Awesome' lists, gives the site social proof.",
+      "url": "https://github.com/office287/terminal-jetaime",
+      "status": "open"
+    },
+    {
+      "id": "product-hunt",
+      "title": "Draft & launch on Product Hunt (Tue or Wed morning ET)",
+      "why": "Highest single-day traffic spike available to a free dev tool. Free tools do well there.",
+      "url": "https://www.producthunt.com/posts/new",
+      "status": "open"
+    },
+    {
+      "id": "hacker-news",
+      "title": "Post a \"Show HN\" on Hacker News (weekday ~9am ET)",
+      "why": "One front-page hit = thousands of devs see it. Format: \"Show HN: Terminal Je T'aime – macOS terminal cheat sheet with instant copy\".",
+      "url": "https://news.ycombinator.com/submit",
+      "status": "open"
+    },
+    {
+      "id": "reddit-posts",
+      "title": "Post tailored writeups in r/commandline, r/macOS, r/webdev",
+      "why": "Each sub gets a different angle (no cross-posting). Lead with the value, not the link.",
+      "url": "https://reddit.com",
+      "status": "open"
+    },
+    {
+      "id": "devhunt-awesome",
+      "title": "Submit to DevHunt, free-for.dev, Awesome Terminal, Awesome macOS",
+      "why": "Directory backlinks help both Google and AI engines find the site.",
+      "url": "https://devhunt.org",
+      "status": "open"
+    },
+    {
+      "id": "anthropic-api-key",
+      "title": "Add ANTHROPIC_API_KEY to GitHub repo secrets",
+      "why": "Unlocks the nightly workflow to use Claude for autonomous content improvements (new commands, FAQ entries, testimonial polish). Without it, the nightly job only does deterministic freshness updates.",
+      "url": "https://github.com/office287/terminal-jetaime/settings/secrets/actions",
+      "status": "open"
+    },
+    {
+      "id": "telegram-secrets",
+      "title": "Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to GitHub repo secrets",
+      "why": "Required so the nightly GitHub Action can send you the Telegram report. (Local .env.local already works.)",
+      "url": "https://github.com/office287/terminal-jetaime/settings/secrets/actions",
+      "status": "open"
+    }
+  ]
+}

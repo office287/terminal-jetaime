@@ -1,17 +1,18 @@
 # terminal je t'aime
 
-A beautifully curated macOS terminal command cheat sheet. 68 essential commands across 11 categories — navigation, file management, Git, search, permissions, networking, and more. Search instantly, copy with one click.
+A beautifully curated macOS terminal command cheat sheet. 88 essential commands across 12 categories — navigation, file management, Git, search, permissions, networking, JavaScript/Node, macOS-specific tools, and more. Search instantly, copy with one click.
 
 Live site: [terminaljetaime.com](https://terminaljetaime.com)
 
 ## Features
 
-- **68 commands, 11 categories** — focused on what macOS developers actually use
+- **88 commands, 12 categories** — focused on what macOS developers actually use
 - **Real-time search** — press `/` to focus, `Esc` to clear
 - **One-click copy** — click any command to copy it to your clipboard
 - **Keyboard-first UX** — designed to stay out of your way
 - **Responsive** — works on mobile, scales up cleanly on desktop
 - **Fast** — single static HTML page, no framework, no tracking scripts
+- **AEO-ready** — FAQPage / HowTo / Speakable JSON-LD, `llms.txt`, 29-bot allowlist
 
 ## Stack
 
@@ -43,10 +44,35 @@ The server listens on `http://localhost:3000` by default. Override with the `POR
 │   ├── index.html     # The entire UI (HTML + CSS + JS in one file)
 │   ├── favicon.svg
 │   ├── robots.txt
-│   └── sitemap.xml
+│   ├── sitemap.xml
+│   └── llms.txt       # LLM index per llmstxt.org (AEO standard)
+├── scripts/
+│   └── morning-report.js  # Daily SEO/AEO audit + report generator
+├── reports/           # Dated daily SEO/AEO progress reports
+├── .claude/
+│   └── settings.json  # SessionStart hook that auto-runs the daily report
 ├── SEO-PLAN.md        # SEO strategy and roadmap
 └── WorkRdmap.md       # Work roadmap and priorities
 ```
+
+## Daily SEO/AEO reports
+
+Every morning a fresh audit is written to `reports/YYYY-MM-DD-morning.md`. The
+report includes a live audit of structured data, FAQ counts, heading
+hierarchy, meta tags, robots.txt coverage, sitemap state, `llms.txt`
+presence, the commits in the window since the previous report, and a 16-point
+health-check score.
+
+Run manually:
+
+```bash
+npm run report          # write today's report (no-op if it already exists)
+npm run report:force    # overwrite today's report
+```
+
+It also runs automatically at the start of every Claude Code session in this
+repo via `.claude/settings.json` (SessionStart hook), so simply opening the
+repo in Claude Code keeps the cadence going.
 
 ## Deployment
 
