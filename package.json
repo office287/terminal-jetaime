@@ -4,7 +4,8 @@
   "scripts": {
     "start": "node server.js",
     "report": "node scripts/morning-report.js",
-    "report:force": "node scripts/morning-report.js --force"
+    "report:force": "node scripts/morning-report.js --force",
+    "report:no-send": "node scripts/morning-report.js --no-send"
   },
   "dependencies": { "express": "^4.18.2", "morgan": "^1.10.0", "geoip-lite": "^1.4.10", "pdfkit": "^0.15.0" },
   "engines": { "node": ">=18.0.0" }

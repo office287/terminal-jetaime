@@ -1,26 +1,23 @@
 #!/usr/bin/env node
 /**
  * scripts/morning-report.js
- * Generates a dated SEO/AEO progress report at reports/YYYY-MM-DD-morning.md.
+ * Generates a dated SEO/AEO progress report at reports/YYYY-MM-DD-morning.md
+ * and optionally sends it to Telegram.
  *
- * What it audits:
- *  - JSON-LD schema blocks present in public/index.html (count + @type)
- *  - FAQ Q&A count in both schema and rendered DOM
- *  - h1/h2/h3 hierarchy
- *  - meta tags (description, OG, Twitter)
- *  - robots.txt user-agent count
- *  - sitemap.xml URL count
- *  - presence of llms.txt
- *  - git commits since previous report
+ * Env vars for Telegram delivery:
+ *   TELEGRAM_BOT_TOKEN  — your bot's API token
+ *   TELEGRAM_CHAT_ID    — chat or channel ID to send to (comma-separated for multiple)
  *
  * Run:
- *   node scripts/morning-report.js          # writes today's report (skips if exists)
- *   node scripts/morning-report.js --force  # overwrite today's report
- *   node scripts/morning-report.js --print  # write & print to stdout
+ *   node scripts/morning-report.js              # writes + sends (skips if exists)
+ *   node scripts/morning-report.js --force      # overwrite today's report + send
+ *   node scripts/morning-report.js --print      # write & print to stdout
+ *   node scripts/morning-report.js --no-send    # skip Telegram delivery
  */
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -31,6 +28,13 @@ const INDEX_HTML = path.join(PUBLIC_DIR, 'index.html');
 const ARGS = new Set(process.argv.slice(2));
 const FORCE = ARGS.has('--force');
 const PRINT = ARGS.has('--print');
+const NO_SEND = ARGS.has('--no-send');
+
+const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TG_CHAT_IDS = (process.env.TELEGRAM_CHAT_ID || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
 
 function isoDate(d = new Date()) {
   return d.toISOString().slice(0, 10);
@@ -186,7 +190,74 @@ function buildReport({ today, prev, a, commits }) {
   return lines.join('\n');
 }
 
-function main() {
+function mdToTelegram(md) {
+  return md
+    .replace(/^# (.+)$/gm, '*$1*')
+    .replace(/^## (.+)$/gm, '\n*$1*')
+    .replace(/\*\*(.+?)\*\*/g, '*$1*')
+    .replace(/\|---?\|---?\|/g, '')
+    .replace(/^\| /gm, '  ')
+    .replace(/ \|$/gm, '')
+    .replace(/ \| /g, '  —  ')
+    .replace(/`([^`]+)`/g, '`$1`')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function sendTelegram(text) {
+  if (!TG_TOKEN || TG_CHAT_IDS.length === 0) {
+    console.log('Telegram: skipped (TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set).');
+    return Promise.resolve();
+  }
+
+  const truncated = text.length > 4000 ? text.slice(0, 3950) + '\n\n_(truncated)_' : text;
+
+  const promises = TG_CHAT_IDS.map(chatId => {
+    return new Promise((resolve, reject) => {
+      const payload = JSON.stringify({
+        chat_id: chatId,
+        text: truncated,
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true,
+      });
+
+      const req = https.request(
+        {
+          hostname: 'api.telegram.org',
+          path: `/bot${TG_TOKEN}/sendMessage`,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(payload),
+          },
+        },
+        (res) => {
+          let body = '';
+          res.on('data', (d) => (body += d));
+          res.on('end', () => {
+            if (res.statusCode === 200) {
+              console.log(`Telegram: sent to ${chatId}.`);
+              resolve();
+            } else {
+              console.error(`Telegram: failed for ${chatId} (HTTP ${res.statusCode}): ${body}`);
+              reject(new Error(`Telegram HTTP ${res.statusCode}`));
+            }
+          });
+        }
+      );
+      req.on('error', (err) => {
+        console.error(`Telegram: network error for ${chatId}: ${err.message}`);
+        reject(err);
+      });
+      req.write(payload);
+      req.end();
+    });
+  });
+
+  return Promise.allSettled(promises);
+}
+
+async function main() {
   const today = isoDate();
   if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
   const outPath = path.join(REPORTS_DIR, `${today}-morning.md`);
@@ -205,6 +276,11 @@ function main() {
   fs.writeFileSync(outPath, report, 'utf8');
   console.log(`Wrote ${path.relative(ROOT, outPath)}`);
   if (PRINT) console.log('\n' + report);
+
+  if (!NO_SEND) {
+    const tgText = mdToTelegram(report);
+    await sendTelegram(tgText);
+  }
 }
 
 main();

@@ -2,7 +2,30 @@
 
 ## morning-report.js
 
-Generates a dated SEO/AEO audit at `reports/YYYY-MM-DD-morning.md`.
+Generates a dated SEO/AEO audit at `reports/YYYY-MM-DD-morning.md` and
+sends it to Telegram.
+
+### Telegram delivery
+
+Set two environment variables:
+
+```bash
+export TELEGRAM_BOT_TOKEN="123456:ABC-DEF..."
+export TELEGRAM_CHAT_ID="123456789"        # comma-separated for multiple IDs
+```
+
+On Railway, add them under **Variables** for the service running the report.
+
+If neither variable is set, the script writes the file locally and skips
+Telegram silently — no errors.
+
+### npm scripts
+
+| Command | What it does |
+|---------|-------------|
+| `npm run report` | Generate today's report (skip if exists) + send to Telegram |
+| `npm run report:force` | Regenerate today's report (overwrite) + send to Telegram |
+| `npm run report:no-send` | Generate report but skip Telegram |
 
 ### Triggers (any of these keep the cadence going)
 
@@ -36,3 +59,4 @@ Generates a dated SEO/AEO audit at `reports/YYYY-MM-DD-morning.md`.
 
 A markdown file with a snapshot table, the commits in the window, and a
 16-point health-check score. Designed to be skim-readable in <30 seconds.
+The same content is sent as a Telegram message when credentials are configured.
