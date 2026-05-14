@@ -270,7 +270,7 @@ terminaljetaime.com/tips
 
 - [ ] Add meta description and title update
 - [ ] Add Open Graph and Twitter Card tags
-- [ ] Create OG image (1200x630)
+- [x] Create OG image (1200x630)
 - [ ] Add JSON-LD structured data
 - [ ] Create robots.txt (with AI bot access)
 - [ ] Create sitemap.xml

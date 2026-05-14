@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:       #0e0f14;
+    --surface:  #14151c;
+    --surface2: #1c1d27;
+    --border:   #2a2b3a;
+    --rouge:    #e8455e;
+    --cream:    #f5edd8;
+    --cream-dim:#a09070;
+    --gold:     #e8c872;
+    --lavender: #a08cdc;
+    --mint:     #5cd4b0;
+    --text-dim: #6a6678;
+  }
+
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+  }
+
+  /* grain */
+  body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0.4;
+  }
+
+  /* rouge accent line top */
+  .accent-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--rouge);
+    z-index: 5;
+  }
+
+  .layout {
+    display: flex;
+    height: 100%;
+    padding: 60px 64px;
+    gap: 48px;
+    align-items: center;
+  }
+
+  /* ── LEFT ── */
+  .left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 8px 0;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--rouge);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--rouge);
+    flex-shrink: 0;
+  }
+
+  .title-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 88px;
+    line-height: 0.88;
+    color: var(--cream);
+    letter-spacing: -2px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--rouge);
+    font-weight: 700;
+  }
+
+  .tagline {
+    margin-top: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--cream-dim);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tagline-dot {
+    color: var(--rouge);
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .url {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid #3a3520;
+    background: #1c1a0e;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 1px;
+    height: 100%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ── RIGHT: terminal window ── */
+  .right {
+    width: 420px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .term-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .term-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .dot-r { background: #e8445d; }
+  .dot-y { background: #e8c444; }
+  .dot-g { background: #3ecf6e; }
+
+  .term-label {
+    margin-left: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .term-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cmd-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .prompt {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--cream);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .prompt-sym {
+    color: var(--rouge);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .cmd-name {
+    color: var(--cream);
+  }
+
+  .cmd-arg {
+    color: var(--gold);
+  }
+
+  .cmd-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding-left: 24px;
+  }
+
+  .cmd-sep {
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
+  }
+
+  /* category pills */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+
+  .pill-r { color: var(--rouge);    border-color: #5a1a24; background: #1a080c; }
+  .pill-g { color: var(--gold);     border-color: #3a3520; background: #1c1a0e; }
+  .pill-l { color: var(--lavender); border-color: #3a3060; background: #14111e; }
+  .pill-m { color: var(--mint);     border-color: #1a4038; background: #0c1e1a; }
+</style>
+</head>
+<body>
+
+<div class="accent-top"></div>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="eyebrow">macOS Terminal Cheat Sheet</div>
+
+    <div class="title-block">
+      <h1>terminal<br><em>je t'aime</em></h1>
+      <div class="tagline">
+        <span>68 commands</span>
+        <span class="tagline-dot">·</span>
+        <span>11 categories</span>
+        <span class="tagline-dot">·</span>
+        <span>free forever</span>
+      </div>
+    </div>
+
+    <div class="footer-row">
+      <div class="url">terminaljetaime.com</div>
+      <div class="badge">copy · search · use</div>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="divider"></div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="term-window">
+      <div class="term-header">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="term-label">~/projects</div>
+      </div>
+      <div class="term-body">
+        <div class="cmd-row">
+          <div class="prompt">
+            <span class="prompt-sym">$</span>
+            <span class="cmd-name">grep</span>
+            <span class="cmd-arg">-r "TODO" .</span>
+          </div>
+          <div class="cmd-desc">recursive search in files</div>
+        </div>
+        <div class="cmd-sep"></div>
+        <div class="cmd-row">
+          <div class="prompt">
+            <span class="prompt-sym">$</span>
+            <span class="cmd-name">git</span>
+            <span class="cmd-arg">log --oneline -5</span>
+          </div>
+          <div class="cmd-desc">last 5 commits, compact view</div>
+        </div>
+        <div class="cmd-sep"></div>
+        <div class="cmd-row">
+          <div class="prompt">
+            <span class="prompt-sym">$</span>
+            <span class="cmd-name">chmod</span>
+            <span class="cmd-arg">755 deploy.sh</span>
+          </div>
+          <div class="cmd-desc">make script executable</div>
+        </div>
+        <div class="cmd-sep"></div>
+        <div class="cmd-row">
+          <div class="prompt">
+            <span class="prompt-sym">$</span>
+            <span class="cmd-name">lsof</span>
+            <span class="cmd-arg">-i :3000</span>
+          </div>
+          <div class="cmd-desc">what's running on port 3000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pills">
+      <div class="pill pill-r">navigation</div>
+      <div class="pill pill-g">git</div>
+      <div class="pill pill-l">networking</div>
+      <div class="pill pill-m">permissions</div>
+      <div class="pill pill-r">search</div>
+      <div class="pill pill-g">processes</div>
+      <div class="pill pill-l">file ops</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
