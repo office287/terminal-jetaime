@@ -6,3 +6,6 @@ package-lock.json
 .env
 .env.local
 .env.*.local
+
+# Runtime artifact from nightly-improve.js (read by morning-report.js)
+reports/.last-nightly.json

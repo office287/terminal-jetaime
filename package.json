@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node server.js",
+    "improve": "node scripts/nightly-improve.js",
+    "nightly": "node scripts/nightly-improve.js && node scripts/morning-report.js --force",
     "report": "node scripts/morning-report.js",
     "report:force": "node scripts/morning-report.js --force",
     "report:no-send": "node scripts/morning-report.js --no-send"

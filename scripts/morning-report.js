@@ -143,14 +143,62 @@ function audit() {
   };
 }
 
+function loadNightlySummary() {
+  const p = path.join(REPORTS_DIR, '.last-nightly.json');
+  if (!fs.existsSync(p)) return null;
+  try {
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    if (j.date !== isoDate()) return null; // only count tonight's run
+    return j;
+  } catch { return null; }
+}
+
+function loadActionItems() {
+  const p = path.join(ROOT, 'data', 'action-items.json');
+  if (!fs.existsSync(p)) return [];
+  try {
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return (j.items || []).filter(i => i.status === 'open');
+  } catch { return []; }
+}
+
 function buildReport({ today, prev, a, commits }) {
   const sinceLine = prev ? `since ${prev}` : `since project inception`;
+  const nightly = loadNightlySummary();
+  const openItems = loadActionItems();
   const lines = [];
-  lines.push(`# Morning SEO/AEO Progress Report — ${today}`);
+  lines.push(`# Nightly SEO/AEO Progress Report — ${today}`);
   lines.push('');
   lines.push(`**Site:** terminaljetaime.com`);
   lines.push(`**Goal:** Increase traffic by improving SEO and AEO.`);
   lines.push(`**Window:** ${sinceLine}.`);
+  lines.push('');
+  lines.push('## What was done tonight');
+  lines.push('');
+  if (nightly && nightly.actions && nightly.actions.length > 0) {
+    for (const act of nightly.actions) {
+      lines.push(`- ${act.action} \`${act.file}\` — ${act.detail}`);
+    }
+  } else if (commits.length > 0) {
+    lines.push(`No deterministic refresh was needed (site already up-to-date), but ${commits.length} commit(s) landed in the window — see below.`);
+  } else {
+    lines.push('_No site changes tonight. Audit only._');
+  }
+  lines.push('');
+  lines.push('## Your action items');
+  lines.push('');
+  if (openItems.length === 0) {
+    lines.push('_Nothing for you to do — all tracked items are closed._');
+  } else {
+    for (const item of openItems.slice(0, 5)) {
+      lines.push(`- **${item.title}**`);
+      lines.push(`  _Why:_ ${item.why}`);
+      if (item.url) lines.push(`  ${item.url}`);
+    }
+    if (openItems.length > 5) {
+      lines.push(`- _…and ${openItems.length - 5} more in data/action-items.json_`);
+    }
+  }
   lines.push('');
   lines.push('## Site audit (live snapshot)');
   lines.push('');
