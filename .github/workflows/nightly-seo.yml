@@ -1,0 +1,58 @@
+name: Nightly SEO/AEO improvement + report
+
+# Runs every night at 04:00 UTC.
+# 04:00 UTC ≈ midnight Eastern / 9pm Pacific / 5am Paris.
+# Change the cron to suit your timezone.
+#
+# What this workflow does each night:
+#   1. Checks out main
+#   2. Runs scripts/nightly-improve.js — deterministic SEO/AEO refresh
+#      (sitemap lastmod, JSON-LD dateModified, visible "Last updated", llms.txt)
+#   3. Runs scripts/morning-report.js — audit + report + Telegram delivery
+#   4. Commits the changes and pushes back to main
+#
+# Required GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   TELEGRAM_BOT_TOKEN  — Telegram bot token used to DM you the report
+#   TELEGRAM_CHAT_ID    — comma-separated chat IDs (you + co-recipients)
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply deterministic SEO/AEO improvements
+        run: node scripts/nightly-improve.js
+
+      - name: Generate report + send Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/morning-report.js --force
+
+      - name: Commit & push tonight's changes
+        run: |
+          git config user.name "nightly-seo-bot"
+          git config user.email "bot@terminaljetaime.com"
+          # Stage anything the improve script touched + tonight's report
+          git add public/ reports/ || true
+          if [[ -n "$(git diff --cached --name-only)" ]]; then
+            git commit -m "nightly: SEO/AEO refresh + report $(date -u +%F)"
+            git push
+          else
+            echo "Nothing to commit."
+          fi
