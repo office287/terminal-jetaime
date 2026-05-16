@@ -1,0 +1,71 @@
+name: Daily traffic report
+
+# Runs every morning at 07:00 UTC.
+# Sends a PDF traffic report via Telegram.
+#
+# This workflow is a no-op until scripts/daily-report.js exists — drop the
+# legacy script into the repo and the next run will pick it up.
+#
+# Required GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   TELEGRAM_BOT_TOKEN   — same bot as the SEO report
+#   TELEGRAM_CHAT_ID     — comma-separated chat IDs
+#
+# If the legacy script pulls request logs from Railway (rather than disk),
+# also add:
+#   RAILWAY_TOKEN        — Railway API token
+#   RAILWAY_PROJECT_ID   — project ID for terminal-jetaime
+#   RAILWAY_SERVICE_ID   — service ID for the running server
+#
+# Alternative: if your script reads morgan logs from local disk on Railway,
+# keep it as a Railway-side cron job instead — this GitHub Actions workflow
+# won't have access to the Railway filesystem. Disable this workflow in that
+# case (Settings → Actions → Workflows → disable).
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  traffic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check that scripts/daily-report.js exists
+        id: check
+        run: |
+          if [[ -f scripts/daily-report.js ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::scripts/daily-report.js not found — skipping. Drop the script in to enable."
+          fi
+
+      - name: Setup Node
+        if: steps.check.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.check.outputs.exists == 'true'
+        run: npm ci || npm install
+
+      - name: Run daily traffic report
+        if: steps.check.outputs.exists == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+        run: node scripts/daily-report.js
