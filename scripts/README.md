@@ -1,12 +1,44 @@
 # scripts/
 
-Two scripts run the nightly SEO/AEO loop:
+Three scripts:
 
 1. **`nightly-improve.js`** — applies deterministic site improvements
-2. **`morning-report.js`** — audits the site and sends the Telegram report
+2. **`morning-report.js`** — audits the site and sends the SEO/AEO Telegram report
+3. **`daily-report.js`** — daily traffic PDF (visits, geo, device, bots) sent via Telegram
 
-Together they form the pipeline run nightly by
-`.github/workflows/nightly-seo.yml`.
+(1) + (2) run nightly via `.github/workflows/nightly-seo.yml`.
+(3) runs every morning at 07:00 UTC via `.github/workflows/daily-traffic.yml`.
+
+---
+
+## daily-report.js (traffic report)
+
+**Status:** Drop the legacy script in at `scripts/daily-report.js` and it will
+auto-pick up the next 07:00 UTC run. The workflow is a no-op until the file
+exists.
+
+When wiring it up:
+
+- It must read `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from `process.env`
+  (no hardcoded creds).
+- If it pulls data from Railway logs API, also expect `RAILWAY_TOKEN`,
+  `RAILWAY_PROJECT_ID`, `RAILWAY_SERVICE_ID` in `process.env`.
+- For PDF delivery, use the Telegram `sendDocument` API endpoint
+  (`https://api.telegram.org/bot<TOKEN>/sendDocument`) with the PDF as a
+  multipart form upload. PDFKit is already in `dependencies`.
+
+If the script reads morgan logs directly from disk on Railway, keep it as a
+Railway-side cron job instead — GitHub Actions runners can't see the Railway
+filesystem. Disable `.github/workflows/daily-traffic.yml` in that case.
+
+### Run it locally
+
+```bash
+npm run traffic
+```
+
+Requires `.env.local` to have `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`
+(already set if you ran the SEO report).
 
 ---
 
