@@ -6,14 +6,14 @@
       "title": "Register terminaljetaime.com on Google Search Console",
       "why": "Without GSC you can't see real impressions, clicks, or ranking. Free, ~10 min.",
       "url": "https://search.google.com/search-console",
-      "status": "open"
+      "status": "done"
     },
     {
       "id": "gsc-submit-sitemap",
       "title": "Submit sitemap.xml in Google Search Console",
       "why": "Tells Google to index the FAQ, About, and category anchors faster.",
       "url": "https://terminaljetaime.com/sitemap.xml",
-      "status": "open"
+      "status": "done"
     },
     {
       "id": "google-alerts",
