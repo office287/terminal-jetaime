@@ -49,6 +49,9 @@ const CHAT_IDS       = (process.env.TELEGRAM_CHAT_ID || '')
   .split(',').map(s => s.trim()).filter(Boolean);
 const RAILWAY_TOKEN  = process.env.RAILWAY_TOKEN || '';
 const RAILWAY_SVC    = process.env.RAILWAY_SERVICE_ID || 'terminal-jetaime';
+// `railway logs` streams live by default; --lines makes it fetch recent
+// history and exit. Override the count with RAILWAY_LOG_LINES if needed.
+const RAILWAY_LINES  = process.env.RAILWAY_LOG_LINES || '5000';
 
 // Optional date arg: node daily-report.js 2026-04-15
 const DATE_ARG = process.argv[2] || null;
@@ -97,13 +100,31 @@ function fetchLogs() {
     return '';
   }
   const env = { ...process.env, RAILWAY_TOKEN };
-  const args = ['logs', '--service', RAILWAY_SVC];
+  const args = ['logs', '--service', RAILWAY_SVC, '--lines', String(RAILWAY_LINES)];
+  console.log(`   railway CLI: ${railwayCLI}`);
+  console.log(`   command: railway ${args.join(' ')}`);
   const r = spawnSync(railwayCLI, args, { cwd: ROOT, timeout: 30000, encoding: 'utf8', env });
   if (r.error) {
     console.warn('⚠️  Railway CLI error:', r.error.message);
+    if (r.error.code === 'ETIMEDOUT') {
+      console.warn(`   (killed after 30s — try a smaller RAILWAY_LOG_LINES than ${RAILWAY_LINES})`);
+    }
     return '';
   }
-  return (r.stdout || '') + (r.stderr || '');
+  const stdout = r.stdout || '';
+  const stderr = r.stderr || '';
+  console.log(`   exit status: ${r.status}${r.signal ? ` (signal ${r.signal})` : ''}`);
+  console.log(`   stdout: ${stdout.length} bytes, ${stdout ? stdout.split('\n').length : 0} lines`);
+  if (stderr.trim()) {
+    console.warn('   stderr:', stderr.slice(0, 500).trim());
+  }
+  if (!stdout.trim()) {
+    console.warn('   ⚠️  Railway returned no stdout. Check RAILWAY_TOKEN/RAILWAY_SERVICE_ID, and note');
+    console.warn('       that Railway log retention is limited — a past date may be beyond the window.');
+  } else {
+    console.log('   first log line:', stdout.split('\n').find(l => l.trim()) || '(none)');
+  }
+  return stdout + stderr;
 }
 
 // ── 4. Parse log lines ────────────────────────────────────────────────────────
