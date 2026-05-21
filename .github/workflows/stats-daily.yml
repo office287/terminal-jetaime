@@ -1,0 +1,72 @@
+name: Stats daily (traffic + GSC)
+
+# Runs every morning at 08:00 UTC — after daily-traffic.yml (07:00).
+# Generates reports/YYYY-MM-DD-stats.md and sends a Telegram summary.
+#
+# Required GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   TELEGRAM_BOT_TOKEN        — Telegram bot API token
+#   TELEGRAM_CHAT_ID          — comma-separated chat IDs
+#   RAILWAY_TOKEN             — Railway API token
+#   RAILWAY_SERVICE_ID        — Railway service ID for terminal-jetaime
+#   GSC_SERVICE_ACCOUNT_JSON  — base64-encoded Google service account JSON
+#                               (see SETUP in scripts/stats-daily.js)
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Overwrite existing report if it exists'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Run stats daily report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
+            node scripts/stats-daily.js --force
+          else
+            node scripts/stats-daily.js
+          fi
+
+      - name: Commit report
+        run: |
+          git config user.name "stats-daily-bot"
+          git config user.email "bot@terminaljetaime.com"
+          git add reports/ || true
+          if [[ -n "$(git diff --cached --name-only)" ]]; then
+            git commit -m "stats: daily report $(date -u +%F)"
+            git push
+          else
+            echo "Nothing to commit."
+          fi
