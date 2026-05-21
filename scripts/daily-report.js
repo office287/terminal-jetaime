@@ -109,8 +109,25 @@ function fetchLogs() {
 // ── 4. Parse log lines ────────────────────────────────────────────────────────
 const SKIP = ['wp-admin','wordpress','.git','.php','.env','xmlrpc','wlwmanifest','feed','ID3','favicon'];
 
+// Railway wraps each app log line: it may JSON-encode it ({"message": "..."}),
+// add ANSI colour codes, and/or prepend its own ISO-8601 timestamp. Strip all of
+// that so what remains is the bare morgan line the parser expects.
+function normalizeLine(raw) {
+  let line = raw;
+  const trimmed = line.trim();
+  if (trimmed.startsWith('{')) {
+    try {
+      const obj = JSON.parse(trimmed);
+      if (typeof obj.message === 'string') line = obj.message;
+    } catch { /* not JSON — keep the raw line */ }
+  }
+  line = line.replace(/\x1b\[[0-9;]*m/g, '');
+  line = line.replace(/^\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?\s+/, '');
+  return line;
+}
+
 function getPageHits(logs) {
-  return logs.split('\n').filter(l =>
+  return logs.split('\n').map(normalizeLine).filter(l =>
     l.includes('"GET / HTTP') && !SKIP.some(s => l.includes(s))
   );
 }
@@ -352,6 +369,9 @@ async function sendTelegram(pdfBuffer, chatId, dateLabel) {
   console.log('📡 Fetching Railway logs...');
 
   const logs     = fetchLogs();
+  if (!logs.trim()) {
+    console.warn('⚠️  No log output returned — every figure will be 0. Check RAILWAY_TOKEN / RAILWAY_SERVICE_ID and that the Railway CLI is installed.');
+  }
   const allHits  = getPageHits(logs);
   const dateHits = filterByDate(allHits, prefix);
 
