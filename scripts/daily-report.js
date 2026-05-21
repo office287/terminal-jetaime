@@ -98,12 +98,30 @@ function fetchLogs() {
   }
   const env = { ...process.env, RAILWAY_TOKEN };
   const args = ['logs', '--service', RAILWAY_SVC];
+  console.log(`   railway CLI: ${railwayCLI}`);
+  console.log(`   command: railway ${args.join(' ')}`);
   const r = spawnSync(railwayCLI, args, { cwd: ROOT, timeout: 30000, encoding: 'utf8', env });
   if (r.error) {
     console.warn('⚠️  Railway CLI error:', r.error.message);
+    if (r.error.code === 'ETIMEDOUT') {
+      console.warn('   (the command was killed after 30s — `railway logs` streams live logs and may not return historical entries)');
+    }
     return '';
   }
-  return (r.stdout || '') + (r.stderr || '');
+  const stdout = r.stdout || '';
+  const stderr = r.stderr || '';
+  console.log(`   exit status: ${r.status}${r.signal ? ` (signal ${r.signal})` : ''}`);
+  console.log(`   stdout: ${stdout.length} bytes, ${stdout ? stdout.split('\n').length : 0} lines`);
+  if (stderr.trim()) {
+    console.warn('   stderr:', stderr.slice(0, 500).trim());
+  }
+  if (!stdout.trim()) {
+    console.warn('   ⚠️  Railway returned no stdout. `railway logs` streams the *live* deployment log,');
+    console.warn('       so it cannot return traffic for a past date and yields nothing when idle.');
+  } else {
+    console.log('   first log line:', stdout.split('\n').find(l => l.trim()) || '(none)');
+  }
+  return stdout + stderr;
 }
 
 // ── 4. Parse log lines ────────────────────────────────────────────────────────
