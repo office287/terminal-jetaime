@@ -13,32 +13,36 @@ Three scripts:
 
 ## daily-report.js (traffic report)
 
-**Status:** Drop the legacy script in at `scripts/daily-report.js` and it will
-auto-pick up the next 07:00 UTC run. The workflow is a no-op until the file
-exists.
+Reads real visit data from the live site's token-protected `/__stats` endpoint
+(served by `server.js`) over HTTPS, builds a PDF, and sends it via Telegram. No
+Railway CLI involved — it works from any GitHub Actions runner.
 
-When wiring it up:
+Env vars (`process.env`, set in `.env.local` locally or repo secrets in CI):
 
-- It must read `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from `process.env`
-  (no hardcoded creds).
-- If it pulls data from Railway logs API, also expect `RAILWAY_TOKEN`,
-  `RAILWAY_PROJECT_ID`, `RAILWAY_SERVICE_ID` in `process.env`.
-- For PDF delivery, use the Telegram `sendDocument` API endpoint
-  (`https://api.telegram.org/bot<TOKEN>/sendDocument`) with the PDF as a
-  multipart form upload. PDFKit is already in `dependencies`.
+- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — Telegram delivery (no hardcoded creds).
+- `STATS_TOKEN` — shared secret; **must match** the `STATS_TOKEN` set on the server.
+- `STATS_URL` — live site base URL (default `https://terminaljetaime.com`).
 
-If the script reads morgan logs directly from disk on Railway, keep it as a
-Railway-side cron job instead — GitHub Actions runners can't see the Railway
-filesystem. Disable `.github/workflows/daily-traffic.yml` in that case.
+PDF delivery uses the Telegram `sendDocument` endpoint with a multipart upload;
+PDFKit is already in `dependencies`.
+
+> **Persistence:** the server writes visits to `data/hits.jsonl`. Railway's
+> filesystem is ephemeral, so point `STATS_DATA_DIR` at a mounted Railway
+> volume — otherwise the store resets on every redeploy (including the nightly
+> push to `main`) and the report only sees traffic since the last deploy.
 
 ### Run it locally
 
 ```bash
-npm run traffic
+# 1. start the server with a token
+STATS_TOKEN=devsecret npm start
+# 2. in another shell, point the report at it
+STATS_URL=http://localhost:3000 STATS_TOKEN=devsecret npm run traffic
+# add `-- 2026-05-15` for a specific date, or `-- --out report.pdf` to save the PDF
 ```
 
-Requires `.env.local` to have `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`
-(already set if you ran the SEO report).
+Reports **yesterday** (a complete UTC day) by default. Also needs `.env.local`
+to have `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` for delivery.
 
 ---
 

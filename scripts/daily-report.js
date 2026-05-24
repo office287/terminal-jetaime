@@ -5,20 +5,22 @@
  * scripts/daily-report.js
  * Generates a PDF traffic report and sends it to Telegram.
  *
+ * Traffic data comes from the live site's token-protected /__stats endpoint
+ * (served by server.js), not from Railway logs — so it works from anywhere.
+ *
  * Env vars (set in .env.local locally, GitHub repo secrets in CI):
  *   TELEGRAM_BOT_TOKEN   — Telegram bot API token
  *   TELEGRAM_CHAT_ID     — comma-separated chat IDs
- *   RAILWAY_TOKEN        — Railway API token (for `railway logs`)
- *   RAILWAY_SERVICE_ID   — Railway service ID or name (default: terminal-jetaime)
+ *   STATS_URL            — base URL of the live site (default: https://terminaljetaime.com)
+ *   STATS_TOKEN          — shared secret matching the server's STATS_TOKEN
  *
  * Run:
- *   node scripts/daily-report.js            # today's report
+ *   node scripts/daily-report.js            # yesterday's report (full UTC day)
  *   node scripts/daily-report.js 2026-05-15 # specific date
  */
 
 const path      = require('path');
 const fs        = require('fs');
-const { spawnSync } = require('child_process');
 const PDFDocument = require('pdfkit');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -47,20 +49,25 @@ loadEnvFile(path.join(ROOT, '.env'));
 const BOT_TOKEN      = process.env.TELEGRAM_BOT_TOKEN || '';
 const CHAT_IDS       = (process.env.TELEGRAM_CHAT_ID || '')
   .split(',').map(s => s.trim()).filter(Boolean);
-const RAILWAY_TOKEN  = process.env.RAILWAY_TOKEN || '';
-const RAILWAY_SVC    = process.env.RAILWAY_SERVICE_ID || 'terminal-jetaime';
+const STATS_URL      = (process.env.STATS_URL || 'https://terminaljetaime.com').replace(/\/+$/, '');
+const STATS_TOKEN    = process.env.STATS_TOKEN || '';
 
-// Optional date arg: node daily-report.js 2026-04-15
-const DATE_ARG = process.argv[2] || null;
+// CLI args: an optional YYYY-MM-DD date, and an optional `--out <path>` to also
+// save the generated PDF to disk (handy for local debugging / previews).
+const RAW_ARGS = process.argv.slice(2);
+const OUT_IDX  = RAW_ARGS.indexOf('--out');
+const OUT_PATH = OUT_IDX !== -1 ? RAW_ARGS[OUT_IDX + 1] : null;
+const DATE_ARG = RAW_ARGS.find(a => /^\d{4}-\d{2}-\d{2}$/.test(a)) || null;
 
 // ── 1. Date helpers ───────────────────────────────────────────────────────────
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
 function getTargetDate() {
-  return DATE_ARG ? new Date(DATE_ARG + 'T12:00:00Z') : new Date();
+  if (DATE_ARG) return new Date(DATE_ARG + 'T12:00:00Z');
+  const d = new Date();           // default: yesterday (a complete UTC day)
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d;
 }
-function getLogDatePrefix(d) {
-  return `${String(d.getUTCDate()).padStart(2,'0')}/${MONTHS[d.getUTCMonth()]}/${d.getUTCFullYear()}`;
+function getIsoDate(d) {
+  return d.toISOString().slice(0, 10);
 }
 function getDisplayDate(d) {
   return d.toLocaleDateString('en-GB', {
@@ -68,79 +75,39 @@ function getDisplayDate(d) {
   });
 }
 
-// ── 2. Find Railway CLI ───────────────────────────────────────────────────────
-function findRailwayCLI() {
-  const candidates = [
-    '/opt/homebrew/bin/railway',
-    '/usr/local/bin/railway',
-    '/usr/bin/railway',
-  ];
-  // Try which first
-  const which = spawnSync('which', ['railway'], { encoding: 'utf8' });
-  if (which.status === 0 && which.stdout.trim()) return which.stdout.trim();
-  // Fall back to known paths
-  for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
+// ── 2. Fetch visits from the live site's /__stats endpoint ────────────────────
+async function fetchVisits(isoDate) {
+  if (!STATS_TOKEN) {
+    console.warn('⚠️  STATS_TOKEN not set — cannot read traffic. Set it here and on the server.');
+    return null;
   }
-  return null;
+  const url = `${STATS_URL}/__stats?date=${isoDate}`;
+  try {
+    const res = await fetch(url, { headers: { 'X-Stats-Token': STATS_TOKEN } });
+    if (!res.ok) {
+      console.warn(`⚠️  Stats endpoint returned HTTP ${res.status} (check STATS_URL / STATS_TOKEN).`);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn('⚠️  Could not reach stats endpoint:', err.message);
+    return null;
+  }
 }
 
-// ── 3. Fetch logs ─────────────────────────────────────────────────────────────
-function fetchLogs() {
-  const railwayCLI = findRailwayCLI();
-  if (!railwayCLI) {
-    console.warn('⚠️  Railway CLI not found. Install with: npm install -g @railway/cli');
-    return '';
-  }
-  if (!RAILWAY_TOKEN) {
-    console.warn('⚠️  RAILWAY_TOKEN not set — skipping log fetch.');
-    return '';
-  }
-  const env = { ...process.env, RAILWAY_TOKEN };
-  const args = ['logs', '--service', RAILWAY_SVC];
-  const r = spawnSync(railwayCLI, args, { cwd: ROOT, timeout: 30000, encoding: 'utf8', env });
-  if (r.error) {
-    console.warn('⚠️  Railway CLI error:', r.error.message);
-    return '';
-  }
-  return (r.stdout || '') + (r.stderr || '');
-}
-
-// ── 4. Parse log lines ────────────────────────────────────────────────────────
+// ── 3. Skip junk + shape a recorded visit into a display row ───────────────────
 const SKIP = ['wp-admin','wordpress','.git','.php','.env','xmlrpc','wlwmanifest','feed','ID3','favicon'];
 
-// Railway wraps each app log line: it may JSON-encode it ({"message": "..."}),
-// add ANSI colour codes, and/or prepend its own ISO-8601 timestamp. Strip all of
-// that so what remains is the bare morgan line the parser expects.
-function normalizeLine(raw) {
-  let line = raw;
-  const trimmed = line.trim();
-  if (trimmed.startsWith('{')) {
-    try {
-      const obj = JSON.parse(trimmed);
-      if (typeof obj.message === 'string') line = obj.message;
-    } catch { /* not JSON — keep the raw line */ }
-  }
-  line = line.replace(/\x1b\[[0-9;]*m/g, '');
-  line = line.replace(/^\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?\s+/, '');
-  return line;
+function isJunk(rec) {
+  const hay = `${rec.ref || ''} ${rec.ua || ''}`;
+  return SKIP.some(s => hay.includes(s));
 }
 
-function getPageHits(logs) {
-  return logs.split('\n').map(normalizeLine).filter(l =>
-    l.includes('"GET / HTTP') && !SKIP.some(s => l.includes(s))
-  );
-}
-function filterByDate(hits, prefix) {
-  return hits.filter(h => h.includes(prefix));
-}
-
-function parseLine(line) {
-  const m = line.match(
-    /^(\S+) \[([^\]]+)\] - - \[(\d+\/\w+\/\d+):(\d+:\d+:\d+)[^\]]*\] "[^"]*" (\d+) \S+ "([^"]*)" "([^"]*)"/
-  );
-  if (!m) return null;
-  const [, ip, geo, , time, status, referrer, ua] = m;
+function toRow(rec) {
+  const ua       = rec.ua || '-';
+  const referrer = rec.ref || '-';
+  const geo      = rec.geo || 'unknown';
+  const time     = typeof rec.t === 'string' ? rec.t.slice(11, 19) : '—'; // HH:MM:SS UTC
 
   const device =
     ua.includes('iPhone')    ? 'iPhone'  :
@@ -156,7 +123,7 @@ function parseLine(line) {
     referrer.includes('t.me')               ? 'Telegram'  :
     referrer;
 
-  return { ip, geo, time, status, referrer, ua, device, source };
+  return { ip: rec.ip, geo, time, referrer, ua, device, source };
 }
 
 // ── 5. Hit classification ─────────────────────────────────────────────────────
@@ -187,7 +154,7 @@ function classify(p) {
 }
 
 // ── 6. Build PDF ──────────────────────────────────────────────────────────────
-function generatePDF(allHits, dateHits, dateLabel) {
+function generatePDF(totalCount, rows, dateLabel) {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true });
     const chunks = [];
@@ -214,13 +181,13 @@ function generatePDF(allHits, dateHits, dateLabel) {
     let y = 92;
 
     // Summary cards
-    const realHits = dateHits.filter(h => { const p = parseLine(h); return p && classify(p).label === 'Real visitor'; });
-    const geos     = new Set(dateHits.map(h => { const p = parseLine(h); return p ? p.geo.split(',')[0].trim() : null; }).filter(Boolean));
+    const realHits = rows.filter(p => classify(p).label === 'Real visitor');
+    const geos     = new Set(rows.map(p => (p.geo || '').split(',')[0].trim()).filter(g => g && g !== 'unknown'));
     const cards = [
-      { value: dateHits.length, label: "TODAY'S HITS"  },
+      { value: rows.length,     label: 'HITS'         },
       { value: realHits.length, label: 'REAL VISITORS' },
       { value: geos.size,       label: 'COUNTRIES'     },
-      { value: allHits.length,  label: 'TOTAL IN LOG'  },
+      { value: totalCount,      label: 'TOTAL IN LOG'  },
     ];
 
     const cardW = 115, cardH = 58, gap = 8;
@@ -241,7 +208,7 @@ function generatePDF(allHits, dateHits, dateLabel) {
     doc.moveTo(L, y).lineTo(R, y).lineWidth(1).stroke('#0e0f14');
     y += 8;
 
-    if (dateHits.length === 0) {
+    if (rows.length === 0) {
       doc.fontSize(10).font('Helvetica').fillColor('#999').text('No hits recorded for this date.', L, y);
       doc.end();
       return;
@@ -261,9 +228,7 @@ function generatePDF(allHits, dateHits, dateLabel) {
     drawHeader();
     y += ROW_H + 2;
 
-    dateHits.forEach((line, i) => {
-      const p = parseLine(line);
-      if (!p) return;
+    rows.forEach((p, i) => {
       const note = classify(p);
 
       if (y + ROW_H > 810) {
@@ -362,23 +327,29 @@ async function sendTelegram(pdfBuffer, chatId, dateLabel) {
   }
 
   const target    = getTargetDate();
-  const prefix    = getLogDatePrefix(target);
+  const isoDate   = getIsoDate(target);
   const dateLabel = getDisplayDate(target);
 
-  console.log(`📅 Reporting for: ${dateLabel} (${prefix})`);
-  console.log('📡 Fetching Railway logs...');
+  console.log(`📅 Reporting for: ${dateLabel} (${isoDate})`);
+  console.log(`📡 Fetching visits from ${STATS_URL}/__stats ...`);
 
-  const logs     = fetchLogs();
-  if (!logs.trim()) {
-    console.warn('⚠️  No log output returned — every figure will be 0. Check RAILWAY_TOKEN / RAILWAY_SERVICE_ID and that the Railway CLI is installed.');
+  const stats = await fetchVisits(isoDate);
+  if (!stats) {
+    console.warn('⚠️  No stats returned — every figure will be 0. Check STATS_URL / STATS_TOKEN and that the site is up.');
   }
-  const allHits  = getPageHits(logs);
-  const dateHits = filterByDate(allHits, prefix);
+  const hits      = (stats && Array.isArray(stats.hits)) ? stats.hits : [];
+  const totalCount = stats ? (stats.total || 0) : 0;
+  const rows      = hits.filter(h => !isJunk(h)).map(toRow);
 
-  console.log(`   All-time: ${allHits.length}  |  This day: ${dateHits.length}`);
+  console.log(`   All-time: ${totalCount}  |  This day: ${rows.length}`);
 
   console.log('📄 Generating PDF...');
-  const pdf = await generatePDF(allHits, dateHits, dateLabel);
+  const pdf = await generatePDF(totalCount, rows, dateLabel);
+
+  if (OUT_PATH) {
+    fs.writeFileSync(OUT_PATH, pdf);
+    console.log(`💾 Saved PDF to ${OUT_PATH}`);
+  }
 
   if (!BOT_TOKEN || CHAT_IDS.length === 0) {
     console.log('📄 PDF generated (' + pdf.length + ' bytes). No Telegram creds — done.');

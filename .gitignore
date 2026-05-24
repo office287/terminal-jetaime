@@ -9,3 +9,6 @@ package-lock.json
 
 # Runtime artifact from nightly-improve.js (read by morning-report.js)
 reports/.last-nightly.json
+
+# Visit store written by server.js (served via /__stats)
+data/hits.jsonl
