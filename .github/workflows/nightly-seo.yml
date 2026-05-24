@@ -13,11 +13,12 @@ name: Nightly SEO/AEO improvement + report
 #   5. Commits all changes and pushes back to main
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
-#   TELEGRAM_BOT_TOKEN       — Telegram bot token used to DM you the report
-#   TELEGRAM_CHAT_ID         — comma-separated chat IDs (you + co-recipients)
-#   GSC_SERVICE_ACCOUNT_KEY  — Google service account JSON key (for Search Console API)
-#   GSC_SITE_URL             — GSC property URL, e.g. sc-domain:terminaljetaime.com
-#   ANTHROPIC_API_KEY        — Claude API key (console.anthropic.com/settings/keys)
+#   TELEGRAM_BOT_TOKEN            — Telegram bot token used to DM you the report
+#   TELEGRAM_CHAT_ID              — comma-separated chat IDs (you + co-recipients)
+#   GCP_WORKLOAD_IDENTITY_PROVIDER — WIF provider resource name (no JSON key needed)
+#   GCP_SERVICE_ACCOUNT           — gsc-reader@terminaljetaime.iam.gserviceaccount.com
+#   GSC_SITE_URL                  — GSC property URL, e.g. sc-domain:terminaljetaime.com
+#   ANTHROPIC_API_KEY             — Claude API key (console.anthropic.com/settings/keys)
 
 on:
   schedule:
@@ -26,6 +27,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write   # needed for Workload Identity Federation
 
 env:
   # Opt in to Node.js 24 for action runtimes (becomes default June 2026).
@@ -47,9 +49,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        continue-on-error: true
+
       - name: Fetch Google Search Console data
         env:
-          GSC_SERVICE_ACCOUNT_KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_KEY }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
         run: node scripts/gsc-fetch.js
         continue-on-error: true

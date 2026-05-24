@@ -5,17 +5,21 @@
  * Fetches the last 28 days of search analytics from Google Search Console
  * and saves the result to data/gsc-latest.json for gsc-improve.js to consume.
  *
- * Required env vars (set in .env.local or as GitHub secrets):
- *   GSC_SERVICE_ACCOUNT_KEY  — full JSON string of a GCP service account key
- *   GSC_SITE_URL             — GSC property URL, e.g. sc-domain:terminaljetaime.com
- *                              (find it in the GSC property selector dropdown)
+ * Auth: uses Application Default Credentials — no JSON key file needed.
+ * In GitHub Actions, google-github-actions/auth sets these automatically via
+ * Workload Identity Federation.
+ * Locally, run: gcloud auth application-default login
+ *
+ * Required env vars / GitHub secrets:
+ *   GSC_SITE_URL  — GSC property URL, e.g. sc-domain:terminaljetaime.com
  *
  * Setup (one-time):
- *   1. Google Cloud Console → create project → enable "Google Search Console API"
- *   2. IAM → Service Accounts → create → download JSON key
- *   3. Search Console → Settings → Users & permissions → Add user → paste service account email
- *   4. Set GSC_SERVICE_ACCOUNT_KEY = <contents of JSON key file>
- *   5. Set GSC_SITE_URL = sc-domain:terminaljetaime.com  (or https://... form)
+ *   1. Google Cloud Console → project terminaljetaime → enable "Google Search Console API"
+ *   2. Create service account gsc-reader@terminaljetaime.iam.gserviceaccount.com
+ *   3. Workload Identity Federation → pool github-pool / provider github-provider
+ *   4. Search Console → Settings → Users & permissions → Add user →
+ *      gsc-reader@terminaljetaime.iam.gserviceaccount.com → Full permission
+ *   5. GitHub secrets: GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT, GSC_SITE_URL
  */
 
 const { google } = require('googleapis');
@@ -41,13 +45,8 @@ function loadEnvFile(file) {
 loadEnvFile(path.join(ROOT, '.env.local'));
 loadEnvFile(path.join(ROOT, '.env'));
 
-const KEY_RAW = process.env.GSC_SERVICE_ACCOUNT_KEY;
 const SITE_URL = process.env.GSC_SITE_URL;
 
-if (!KEY_RAW) {
-  console.log('GSC_SERVICE_ACCOUNT_KEY not set — skipping GSC fetch.');
-  process.exit(0);
-}
 if (!SITE_URL) {
   console.log('GSC_SITE_URL not set — skipping GSC fetch.');
   process.exit(0);
@@ -68,16 +67,9 @@ function toRow(r, keyNames) {
 }
 
 async function main() {
-  let credentials;
-  try {
-    credentials = JSON.parse(KEY_RAW);
-  } catch {
-    console.error('GSC_SERVICE_ACCOUNT_KEY is not valid JSON.');
-    process.exit(1);
-  }
-
+  // Application Default Credentials — set automatically by google-github-actions/auth
+  // or locally via: gcloud auth application-default login
   const auth = new google.auth.GoogleAuth({
-    credentials,
     scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
   });
 
