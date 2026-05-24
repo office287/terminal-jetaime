@@ -6,8 +6,8 @@ name: Stats daily (traffic + GSC)
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
 #   TELEGRAM_BOT_TOKEN        — Telegram bot API token
 #   TELEGRAM_CHAT_ID          — comma-separated chat IDs
-#   RAILWAY_TOKEN             — Railway API token
-#   RAILWAY_SERVICE_ID        — Railway service ID for terminal-jetaime
+#   STATS_TOKEN               — shared secret matching the server's STATS_TOKEN env var
+#   STATS_URL                 — optional; live site base URL (default https://terminaljetaime.com)
 #   GSC_SERVICE_ACCOUNT_JSON  — base64-encoded Google service account JSON
 #                               (see SETUP in scripts/stats-daily.js)
 
@@ -42,15 +42,12 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
       - name: Run stats daily report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+          STATS_URL: ${{ secrets.STATS_URL }}
+          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
           GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
         run: |
           if [[ "${{ github.event.inputs.force }}" == "true" ]]; then

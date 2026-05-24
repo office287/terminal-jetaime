@@ -9,8 +9,8 @@
  *
  *  TELEGRAM_BOT_TOKEN        — Telegram bot API token
  *  TELEGRAM_CHAT_ID          — comma-separated chat IDs
- *  RAILWAY_TOKEN             — Railway API token
- *  RAILWAY_SERVICE_ID        — Railway service ID (default: terminal-jetaime)
+ *  STATS_URL                 — live site base URL (default: https://terminaljetaime.com)
+ *  STATS_TOKEN              — shared secret matching the server's STATS_TOKEN
  *  GSC_SERVICE_ACCOUNT_JSON  — Google service account key, base64-encoded JSON
  *  GSC_SITE_URL              — GSC property URL (default: https://terminaljetaime.com/)
  *
@@ -40,7 +40,6 @@
 const fs         = require('fs');
 const path       = require('path');
 const https      = require('https');
-const { spawnSync } = require('child_process');
 
 const ROOT        = path.resolve(__dirname, '..');
 const REPORTS_DIR = path.join(ROOT, 'reports');
@@ -70,8 +69,8 @@ const NO_SEND  = ARGS.has('--no-send');
 
 const TG_TOKEN    = process.env.TELEGRAM_BOT_TOKEN || '';
 const TG_CHAT_IDS = (process.env.TELEGRAM_CHAT_ID || '').split(',').map(s => s.trim()).filter(Boolean);
-const RAILWAY_TOKEN = process.env.RAILWAY_TOKEN || '';
-const RAILWAY_SVC   = process.env.RAILWAY_SERVICE_ID || 'terminal-jetaime';
+const STATS_URL     = (process.env.STATS_URL || 'https://terminaljetaime.com').replace(/\/+$/, '');
+const STATS_TOKEN   = process.env.STATS_TOKEN || '';
 const GSC_JSON_B64  = process.env.GSC_SERVICE_ACCOUNT_JSON || '';
 const GSC_SITE_URL  = process.env.GSC_SITE_URL || 'https://terminaljetaime.com/';
 
@@ -84,56 +83,25 @@ function offsetDate(days) {
   return isoDate(d);
 }
 
-// ── Railway log fetch (same as daily-report.js) ───────────────────────────────
-function findRailwayCLI() {
-  const which = spawnSync('which', ['railway'], { encoding: 'utf8' });
-  if (which.status === 0 && which.stdout.trim()) return which.stdout.trim();
-  for (const p of ['/opt/homebrew/bin/railway', '/usr/local/bin/railway', '/usr/bin/railway'])
-    if (fs.existsSync(p)) return p;
-  return null;
-}
-
-function fetchRailwayLogs() {
-  const cli = findRailwayCLI();
-  if (!cli)          { console.warn('Railway CLI not found'); return ''; }
-  if (!RAILWAY_TOKEN){ console.warn('RAILWAY_TOKEN not set'); return ''; }
-  const r = spawnSync(cli, ['logs', '--service', RAILWAY_SVC], {
-    cwd: ROOT, timeout: 30000, encoding: 'utf8',
-    env: { ...process.env, RAILWAY_TOKEN },
-  });
-  return (r.stdout || '') + (r.stderr || '');
+// ── Traffic fetch from the live site's /__stats endpoint ──────────────────────
+async function fetchVisits(isoDateStr) {
+  if (!STATS_TOKEN) { console.warn('STATS_TOKEN not set'); return null; }
+  const url = `${STATS_URL}/__stats?date=${isoDateStr}`;
+  try {
+    const res = await fetch(url, { headers: { 'X-Stats-Token': STATS_TOKEN } });
+    if (!res.ok) { console.warn(`Stats endpoint HTTP ${res.status}`); return null; }
+    return await res.json();
+  } catch (err) {
+    console.warn('Stats fetch failed:', err.message);
+    return null;
+  }
 }
 
 const LOG_SKIP = ['wp-admin','wordpress','.git','.php','.env','xmlrpc','wlwmanifest','feed','ID3','favicon'];
 
-function parseHits(logs) {
-  return logs.split('\n').filter(l => l.includes('"GET / HTTP') && !LOG_SKIP.some(s => l.includes(s)));
-}
-
-function filterHitsByDate(hits, prefix) {
-  return hits.filter(h => h.includes(prefix));
-}
-
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function logDatePrefix(d = new Date()) {
-  return `${String(d.getUTCDate()).padStart(2,'0')}/${MONTHS[d.getUTCMonth()]}/${d.getUTCFullYear()}`;
-}
-
-function parseLine(line) {
-  const m = line.match(
-    /^(\S+) \[([^\]]+)\] - - \[(\d+\/\w+\/\d+):(\d+:\d+:\d+)[^\]]*\] "[^"]*" (\d+) \S+ "([^"]*)" "([^"]*)"/
-  );
-  if (!m) return null;
-  const [, ip, geo, , time, status, referrer, ua] = m;
-  const device =
-    ua.includes('iPhone') ? 'iPhone' : ua.includes('iPad') ? 'iPad' :
-    ua.includes('Android') ? 'Android' : ua.includes('Macintosh') ? 'Mac' :
-    ua.includes('Windows') ? 'Windows' : ua.includes('Linux') ? 'Linux' : '—';
-  const source =
-    referrer === '-'                        ? 'Direct' :
-    referrer.includes('terminaljetaime.com')? 'Self'   :
-    referrer.includes('t.me')               ? 'Telegram': referrer;
-  return { ip, geo, time, status, referrer, ua, device, source };
+function isJunk(rec) {
+  const hay = `${rec.ref || ''} ${rec.ua || ''}`;
+  return LOG_SKIP.some(s => hay.includes(s));
 }
 
 function classifyHit(p) {
@@ -152,19 +120,17 @@ function classifyHit(p) {
   return 'Unknown';
 }
 
-function trafficSummary(logs) {
-  const today    = new Date();
-  const allHits  = parseHits(logs);
-  const todayHits = filterHitsByDate(allHits, logDatePrefix(today));
-  const parsed   = todayHits.map(parseLine).filter(Boolean);
-  const byClass  = {};
-  for (const p of parsed) {
-    const cls = classifyHit(p);
+function trafficSummary(stats) {
+  const hits  = (stats && Array.isArray(stats.hits)) ? stats.hits.filter(h => !isJunk(h)) : [];
+  const total = stats ? (stats.total || 0) : 0;
+  const byClass = {};
+  for (const rec of hits) {
+    const cls = classifyHit({ ua: rec.ua || '', referrer: rec.ref || '-' });
     byClass[cls] = (byClass[cls] || 0) + 1;
   }
-  const geos = new Set(parsed.map(p => p.geo.split(',')[0].trim()).filter(Boolean));
+  const geos = new Set(hits.map(h => (h.geo || '').split(',')[0].trim()).filter(g => g && g !== 'unknown'));
   return {
-    totalHits:  todayHits.length,
+    totalHits:    hits.length,
     realVisitors: byClass['Real visitor'] || 0,
     viaTelegram:  byClass['Via Telegram']  || 0,
     googlebots:   byClass['Googlebot']     || 0,
@@ -173,7 +139,7 @@ function trafficSummary(logs) {
     suspicious:   byClass['Suspicious']    || 0,
     unknown:      byClass['Unknown']       || 0,
     countries:    geos.size,
-    allTimeHits:  allHits.length,
+    allTimeHits:  total,
   };
 }
 
@@ -277,10 +243,10 @@ function buildReport(today, traffic, gsc) {
   push('');
 
   // ── Traffic ──────────────────────────────────────────────────────────────
-  push('## Traffic — Today');
+  push('## Traffic — Yesterday');
   push('');
-  if (!RAILWAY_TOKEN) {
-    push('_Railway logs not available (RAILWAY_TOKEN not set)._');
+  if (!STATS_TOKEN) {
+    push('_Traffic data not available (STATS_TOKEN not set — see server.js /__stats)._');
   } else {
     push('| Metric | Count |');
     push('|---|---|');
@@ -422,8 +388,8 @@ function buildTelegramSummary(today, traffic, gsc) {
   lines.push(`*Stats Daily — ${today}*`);
   lines.push('');
 
-  if (RAILWAY_TOKEN) {
-    lines.push(`*Traffic today*`);
+  if (STATS_TOKEN) {
+    lines.push(`*Traffic yesterday*`);
     lines.push(`  Hits: ${traffic.totalHits}  |  Real: ${traffic.realVisitors}  |  Countries: ${traffic.countries}`);
     lines.push(`  Telegram: ${traffic.viaTelegram}  |  Googlebot: ${traffic.googlebots}  |  Bots: ${traffic.bots}`);
   }
@@ -496,9 +462,9 @@ function sendTelegram(text) {
     process.exit(0);
   }
 
-  console.log('Fetching Railway logs...');
-  const logs = fetchRailwayLogs();
-  const traffic = trafficSummary(logs);
+  console.log('Fetching visits from /__stats...');
+  const stats = await fetchVisits(offsetDate(-1));
+  const traffic = trafficSummary(stats);
   console.log(`Traffic: ${traffic.totalHits} hits, ${traffic.realVisitors} real visitors`);
 
   console.log('Fetching GSC data...');
