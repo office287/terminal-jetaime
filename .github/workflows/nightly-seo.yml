@@ -5,15 +5,19 @@ name: Nightly SEO/AEO improvement + report
 # Change the cron to suit your timezone.
 #
 # What this workflow does each night:
-#   1. Checks out main
-#   2. Runs scripts/nightly-improve.js — deterministic SEO/AEO refresh
+#   1. Fetches 28 days of search analytics from Google Search Console
+#   2. Sends GSC data to Claude, which writes new FAQs / improves meta description
+#   3. Runs scripts/nightly-improve.js — deterministic SEO/AEO refresh
 #      (sitemap lastmod, JSON-LD dateModified, visible "Last updated", llms.txt)
-#   3. Runs scripts/morning-report.js — audit + report + Telegram delivery
-#   4. Commits the changes and pushes back to main
+#   4. Runs scripts/morning-report.js — audit + report + Telegram delivery
+#   5. Commits all changes and pushes back to main
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
-#   TELEGRAM_BOT_TOKEN  — Telegram bot token used to DM you the report
-#   TELEGRAM_CHAT_ID    — comma-separated chat IDs (you + co-recipients)
+#   TELEGRAM_BOT_TOKEN       — Telegram bot token used to DM you the report
+#   TELEGRAM_CHAT_ID         — comma-separated chat IDs (you + co-recipients)
+#   GSC_SERVICE_ACCOUNT_KEY  — Google service account JSON key (for Search Console API)
+#   GSC_SITE_URL             — GSC property URL, e.g. sc-domain:terminaljetaime.com
+#   ANTHROPIC_API_KEY        — Claude API key (console.anthropic.com/settings/keys)
 
 on:
   schedule:
@@ -40,6 +44,22 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch Google Search Console data
+        env:
+          GSC_SERVICE_ACCOUNT_KEY: ${{ secrets.GSC_SERVICE_ACCOUNT_KEY }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: node scripts/gsc-fetch.js
+        continue-on-error: true
+
+      - name: AI-powered search analysis & improvements
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/gsc-improve.js
+        continue-on-error: true
+
       - name: Apply deterministic SEO/AEO improvements
         run: node scripts/nightly-improve.js
 
@@ -53,10 +73,10 @@ jobs:
         run: |
           git config user.name "nightly-seo-bot"
           git config user.email "bot@terminaljetaime.com"
-          # Stage anything the improve script touched + tonight's report
-          git add public/ reports/ || true
+          # Stage anything the scripts touched
+          git add public/ reports/ data/ || true
           if [[ -n "$(git diff --cached --name-only)" ]]; then
-            git commit -m "nightly: SEO/AEO refresh + report $(date -u +%F)"
+            git commit -m "nightly: SEO/AEO + GSC analysis $(date -u +%F)"
             git push
           else
             echo "Nothing to commit."

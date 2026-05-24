@@ -11,7 +11,10 @@
     "traffic": "node scripts/daily-report.js",
     "stats": "node scripts/stats-daily.js",
     "stats:force": "node scripts/stats-daily.js --force",
-    "stats:print": "node scripts/stats-daily.js --print --no-send"
+    "stats:print": "node scripts/stats-daily.js --print --no-send",
+    "gsc:fetch": "node scripts/gsc-fetch.js",
+    "gsc:improve": "node scripts/gsc-improve.js",
+    "gsc:dry": "node scripts/gsc-improve.js --dry-run"
   },
   "dependencies": { "express": "^4.18.2", "morgan": "^1.10.0", "geoip-lite": "^1.4.10", "pdfkit": "^0.15.0", "googleapis": "^144.0.0" },
   "engines": { "node": ">=18.0.0" }

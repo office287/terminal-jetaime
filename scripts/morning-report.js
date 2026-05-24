@@ -153,6 +153,18 @@ function loadNightlySummary() {
   } catch { return null; }
 }
 
+function loadGSCData() {
+  const p = path.join(ROOT, 'data', 'gsc-latest.json');
+  if (!fs.existsSync(p)) return null;
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; }
+}
+
+function loadGSCImprovements(today) {
+  const p = path.join(REPORTS_DIR, `${today}-gsc.json`);
+  if (!fs.existsSync(p)) return null;
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; }
+}
+
 function loadActionItems() {
   const p = path.join(ROOT, 'data', 'action-items.json');
   if (!fs.existsSync(p)) return [];
@@ -165,6 +177,8 @@ function loadActionItems() {
 function buildReport({ today, prev, a, commits }) {
   const sinceLine = prev ? `since ${prev}` : `since project inception`;
   const nightly = loadNightlySummary();
+  const gsc = loadGSCData();
+  const gscImprovements = loadGSCImprovements(today);
   const openItems = loadActionItems();
   const lines = [];
   lines.push(`# Nightly SEO/AEO Progress Report — ${today}`);
@@ -184,7 +198,57 @@ function buildReport({ today, prev, a, commits }) {
   } else {
     lines.push('_No site changes tonight. Audit only._');
   }
+  if (gscImprovements && gscImprovements.actions && gscImprovements.actions.length > 0) {
+    for (const act of gscImprovements.actions) {
+      if (act.type === 'faq') lines.push(`- Added FAQ: "${act.question}"`);
+      if (act.type === 'meta_description') lines.push(`- Updated meta description`);
+    }
+  }
   lines.push('');
+
+  // ── Google Search Console section ──
+  if (gsc) {
+    const s = gsc.summary;
+    lines.push('## Google Search Console (last 28 days)');
+    lines.push('');
+    lines.push('| Metric | Value |');
+    lines.push('|---|---|');
+    lines.push(`| Clicks | ${s.totalClicks.toLocaleString()} |`);
+    lines.push(`| Impressions | ${s.totalImpressions.toLocaleString()} |`);
+    lines.push(`| Avg CTR | ${s.avgCTR}% |`);
+    lines.push(`| Avg position | ${s.avgPosition ?? 'n/a'} |`);
+    lines.push(`| Queries tracked | ${s.queryCount} |`);
+    if (gsc.insights?.topByClicks?.length > 0) {
+      lines.push('');
+      lines.push('**Top queries (by clicks):**');
+      for (const q of gsc.insights.topByClicks.slice(0, 5)) {
+        lines.push(`- "${q.query}" — ${q.clicks} clicks · pos ${q.position}`);
+      }
+    }
+    if (gsc.insights?.nearMiss?.length > 0) {
+      lines.push('');
+      lines.push('**Near-miss queries (pos 8-20, easy wins):**');
+      for (const q of gsc.insights.nearMiss.slice(0, 5)) {
+        lines.push(`- "${q.query}" — ${q.impressions} impr · pos ${q.position} · ${q.ctr}% CTR`);
+      }
+    }
+    lines.push('');
+  }
+
+  // ── AI search analysis section ──
+  if (gscImprovements) {
+    lines.push("## Claude's search analysis");
+    lines.push('');
+    lines.push(gscImprovements.analysis || '_No analysis available._');
+    if (gscImprovements.suggestions && gscImprovements.suggestions.length > 0) {
+      lines.push('');
+      lines.push('**Suggestions for you:**');
+      for (const s of gscImprovements.suggestions) {
+        lines.push(`- ${s}`);
+      }
+    }
+    lines.push('');
+  }
   lines.push('## Your action items');
   lines.push('');
   if (openItems.length === 0) {
