@@ -105,6 +105,110 @@ function gitCommitsSince(sinceISO) {
   }
 }
 
+function gitStatRange(since, until) {
+  const empty = { commits: 0, prs: 0, activeDays: 0, linesAdded: 0, linesRemoved: 0, filesChanged: 0, types: {} };
+  try {
+    const log = execSync(
+      `git log --since="${since} 00:00:00" --until="${until} 23:59:59" --pretty=format:"%ad||%s" --date=format:"%Y-%m-%d"`,
+      { cwd: ROOT, encoding: 'utf8' }
+    ).split('\n').filter(Boolean);
+
+    const commits = log.length;
+    const prs = log.filter(l => l.includes('||Merge pull request')).length;
+    const activeDays = new Set(log.map(l => l.split('||')[0])).size;
+
+    const types = {};
+    for (const line of log) {
+      const subject = (line.split('||').slice(1).join('||') || '').trim();
+      const m = subject.match(/^(feat|fix|docs|ci|chore|nightly|stats|refactor|test|style|perf|build)/);
+      const type = m ? m[1] : subject.startsWith('Merge pull request') ? 'merge' : 'other';
+      types[type] = (types[type] || 0) + 1;
+    }
+
+    const numstat = execSync(
+      `git log --since="${since} 00:00:00" --until="${until} 23:59:59" --pretty=format:'' --numstat`,
+      { cwd: ROOT, encoding: 'utf8' }
+    );
+    let linesAdded = 0, linesRemoved = 0;
+    const fileSet = new Set();
+    for (const line of numstat.split('\n').filter(Boolean)) {
+      const parts = line.split('\t');
+      if (parts.length >= 3) {
+        linesAdded   += parseInt(parts[0]) || 0;
+        linesRemoved += parseInt(parts[1]) || 0;
+        fileSet.add(parts[2]);
+      }
+    }
+
+    return { commits, prs, activeDays, linesAdded, linesRemoved, filesChanged: fileSet.size, types };
+  } catch {
+    return empty;
+  }
+}
+
+function buildActivitySection(today) {
+  const [y, mo] = today.split('-').map(Number);
+  const daysIntoMonth = parseInt(today.split('-')[2], 10);
+
+  // Yesterday
+  const ydayDate = new Date(Date.UTC(y, mo - 1, daysIntoMonth - 1));
+  const ydayISO  = ydayDate.toISOString().slice(0, 10);
+
+  // Current month: 01 → today
+  const monthStart = `${y}-${String(mo).padStart(2, '0')}-01`;
+
+  // Last month: full calendar month
+  const lmDate  = new Date(Date.UTC(y, mo - 2, 1));
+  const lmY     = lmDate.getUTCFullYear();
+  const lmM     = lmDate.getUTCMonth() + 1;
+  const lmStart = `${lmY}-${String(lmM).padStart(2, '0')}-01`;
+  const lmEnd   = `${lmY}-${String(lmM).padStart(2, '0')}-${new Date(Date.UTC(lmY, lmM, 0)).getUTCDate()}`;
+
+  const yday      = gitStatRange(ydayISO, ydayISO);
+  const thisMonth = gitStatRange(monthStart, today);
+  const lastMonth = gitStatRange(lmStart, lmEnd);
+
+  const pct  = (a, b) => b === 0 ? (a > 0 ? '+∞' : '—') : `${a >= b ? '+' : ''}${Math.round((a - b) / b * 100)}%`;
+  const sign = n => n > 0 ? `+${n}` : `${n}`;
+  const typeStr = types => Object.entries(types).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}×${v}`).join(', ') || '—';
+  const monthName = iso => new Date(iso + 'T00:00:00Z').toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
+
+  const lmName  = monthName(lmStart);
+  const curName = monthName(monthStart);
+
+  const lines = [];
+  lines.push('## Activity Stats');
+  lines.push('');
+
+  lines.push(`### Yesterday — ${ydayISO}`);
+  lines.push('');
+  lines.push('| Metric | Value |');
+  lines.push('|---|---|');
+  lines.push(`| Commits | ${yday.commits} |`);
+  lines.push(`| PRs merged | ${yday.prs} |`);
+  lines.push(`| Lines added | +${yday.linesAdded.toLocaleString()} |`);
+  lines.push(`| Lines removed | −${yday.linesRemoved.toLocaleString()} |`);
+  lines.push(`| Files touched | ${yday.filesChanged} |`);
+  lines.push(`| Commit types | ${typeStr(yday.types)} |`);
+  lines.push('');
+
+  lines.push(`### ${curName} vs ${lmName} (month-over-month)`);
+  lines.push('');
+  lines.push(`| Metric | ${lmName} | ${curName} (day 1–${daysIntoMonth}) | Δ |`);
+  lines.push('|---|---|---|---|');
+  lines.push(`| Commits | ${lastMonth.commits} | ${thisMonth.commits} | ${sign(thisMonth.commits - lastMonth.commits)} (${pct(thisMonth.commits, lastMonth.commits)}) |`);
+  lines.push(`| Active days | ${lastMonth.activeDays} | ${thisMonth.activeDays} | ${sign(thisMonth.activeDays - lastMonth.activeDays)} |`);
+  lines.push(`| PRs merged | ${lastMonth.prs} | ${thisMonth.prs} | ${sign(thisMonth.prs - lastMonth.prs)} |`);
+  lines.push(`| Lines added | +${lastMonth.linesAdded.toLocaleString()} | +${thisMonth.linesAdded.toLocaleString()} | ${sign(thisMonth.linesAdded - lastMonth.linesAdded)} (${pct(thisMonth.linesAdded, lastMonth.linesAdded)}) |`);
+  lines.push(`| Lines removed | −${lastMonth.linesRemoved.toLocaleString()} | −${thisMonth.linesRemoved.toLocaleString()} | ${sign(thisMonth.linesRemoved - lastMonth.linesRemoved)} |`);
+  lines.push(`| Files touched | ${lastMonth.filesChanged} | ${thisMonth.filesChanged} | ${sign(thisMonth.filesChanged - lastMonth.filesChanged)} (${pct(thisMonth.filesChanged, lastMonth.filesChanged)}) |`);
+  lines.push('');
+  lines.push(`**${curName} commit breakdown:** ${typeStr(thisMonth.types)}`);
+  lines.push('');
+
+  return lines.join('\n');
+}
+
 function previousReportDate(today) {
   if (!fs.existsSync(REPORTS_DIR)) return null;
   const files = fs.readdirSync(REPORTS_DIR)
@@ -225,6 +329,7 @@ function buildReport({ today, prev, a, commits }) {
     for (const c of commits) lines.push(`- \`${c.split(' ')[0]}\` ${c.split(' ').slice(1).join(' ')}`);
   }
   lines.push('');
+  lines.push(buildActivitySection(today));
   lines.push('## Health checks');
   lines.push('');
   const checks = [
