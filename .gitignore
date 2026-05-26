@@ -12,3 +12,6 @@ reports/.last-nightly.json
 
 # Visit store written by server.js (served via /__stats)
 data/hits.jsonl
+
+# GSC snapshot written by gsc-fetch.js (refreshed nightly)
+data/gsc-latest.json
