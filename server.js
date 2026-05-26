@@ -91,8 +91,27 @@ app.get('/__stats', (req, res) => {
   res.json({ date, total: all.length, count: hits.length, hits });
 });
 
+// Return 404 for dotfiles/dotdirs (.env, .git, .vscode, etc.) and common
+// scanner targets before they hit the catch-all and get a misleading 200.
+const BLOCKED_PATH_PREFIXES = [
+  '/.', '/wp-', '/xmlrpc.php', '/actuator', '/cgi-bin', '/phpmyadmin',
+];
+app.use((req, res, next) => {
+  const p = req.path.toLowerCase();
+  if (BLOCKED_PATH_PREFIXES.some(prefix => p === prefix || p.startsWith(prefix + '/') || p.startsWith(prefix + '?'))) {
+    return res.status(404).end();
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve the SPA only for extensionless paths; file-extension paths that
+// weren't found by express.static should 404, not return the HTML page.
 app.get('*', (req, res) => {
+  if (/\.[a-zA-Z0-9]{1,8}$/.test(req.path)) {
+    return res.status(404).end();
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
