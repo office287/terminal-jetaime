@@ -162,6 +162,44 @@ function loadActionItems() {
   } catch { return []; }
 }
 
+function loadGscSnapshot() {
+  const p = path.join(ROOT, 'data', 'gsc-latest.json');
+  if (!fs.existsSync(p)) return null;
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; }
+}
+
+function buildGscSection(gsc) {
+  const lines = [];
+  if (!gsc) return lines;
+  const fmtPct = n => (n * 100).toFixed(1) + '%';
+  const fmtPos = n => (+n).toFixed(1);
+  lines.push('## Google Search Console (28-day snapshot)');
+  lines.push('');
+  lines.push(`**Window:** ${gsc.date28Start} → ${gsc.date28End}  |  **Clicks:** ${gsc.totals28.clicks.toLocaleString()}  |  **Impressions:** ${gsc.totals28.impressions.toLocaleString()}`);
+  lines.push('');
+  if (gsc.queriesYday && gsc.queriesYday.length > 0) {
+    lines.push('### Top Queries — Yesterday');
+    lines.push('');
+    lines.push('| Query | Clicks | Impr | CTR | Position |');
+    lines.push('|---|---|---|---|---|');
+    for (const r of gsc.queriesYday.slice(0, 10)) {
+      lines.push(`| ${r.keys[0]} | ${r.clicks} | ${r.impressions} | ${fmtPct(r.ctr)} | ${fmtPos(r.position)} |`);
+    }
+    lines.push('');
+  }
+  if (gsc.almostPage1 && gsc.almostPage1.length > 0) {
+    lines.push('### Quick Wins — Almost Page 1 (pos 4–20, ≥5 impressions)');
+    lines.push('');
+    lines.push('| Query | Position | Clicks | Impressions |');
+    lines.push('|---|---|---|---|');
+    for (const r of gsc.almostPage1) {
+      lines.push(`| ${r.keys[0]} | ${fmtPos(r.position)} | ${r.clicks} | ${r.impressions} |`);
+    }
+    lines.push('');
+  }
+  return lines;
+}
+
 function buildReport({ today, prev, a, commits }) {
   const sinceLine = prev ? `since ${prev}` : `since project inception`;
   const nightly = loadNightlySummary();
@@ -200,6 +238,11 @@ function buildReport({ today, prev, a, commits }) {
     }
   }
   lines.push('');
+  const gsc = loadGscSnapshot();
+  const gscLines = buildGscSection(gsc);
+  if (gscLines.length > 0) {
+    lines.push(...gscLines);
+  }
   lines.push('## Site audit (live snapshot)');
   lines.push('');
   lines.push('| Signal | Value |');

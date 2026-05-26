@@ -43,6 +43,13 @@ jobs:
       - name: Apply deterministic SEO/AEO improvements
         run: node scripts/nightly-improve.js
 
+      - name: Fetch GSC snapshot
+        continue-on-error: true
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: node scripts/gsc-fetch.js
+
       - name: Generate report + send Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
