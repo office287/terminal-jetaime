@@ -13,7 +13,7 @@ terminal je t'aime is a single-page reference at https://terminaljetaime.com. It
 - Commands: 88 curated commands
 - Categories: 12 (navigation, files, view, search, permissions, processes, network, archives, system, Git, JavaScript/Node, macOS-specific)
 - License: MIT (source: https://github.com/office287/terminal-jetaime)
-- Last updated: May 2026
+- Last updated: June 2026
 
 ## Categories and what each covers
 
