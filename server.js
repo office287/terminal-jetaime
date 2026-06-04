@@ -1,6 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
-const geoip = require('geoip-lite');
+// geoip-lite downloads its database during npm install; if that download fails
+// (Railway network timeout, MaxMind CDN issue) the require throws ENOENT and
+// crashes the process. Load it optionally so the server always starts.
+let geoip = null;
+try { geoip = require('geoip-lite'); } catch { /* geo lookups degraded to "unknown" */ }
 const fs = require('fs');
 const path = require('path');
 const app = express();
@@ -22,6 +26,7 @@ function clientIp(req) {
 }
 
 function geoString(ip) {
+  if (!geoip) return 'unknown';
   const geo = geoip.lookup(ip);
   if (!geo) return 'unknown';
   return [geo.country, geo.region, geo.city].filter(Boolean).join(', ');
@@ -29,6 +34,7 @@ function geoString(ip) {
 
 morgan.token('geo', (req) => {
   const ip = clientIp(req);
+  if (!geoip) return `${ip} [unknown]`;
   const geo = geoip.lookup(ip);
   if (!geo) return `${ip} [unknown]`;
   const parts = [geo.country];
