@@ -21,6 +21,10 @@ const RETENTION_DAYS = 40;
 
 app.set('trust proxy', true);
 
+const BLOCKED_PATH_PREFIXES = [
+  '/.', '/wp-', '/xmlrpc.php', '/actuator', '/cgi-bin', '/phpmyadmin',
+];
+
 function clientIp(req) {
   return (req.ip || req.connection?.remoteAddress || '').replace(/^::ffff:/, '');
 }
@@ -73,7 +77,9 @@ function pruneOldHits() {
   fs.writeFileSync(HITS_FILE, kept.length ? kept.join('\n') + '\n' : '');
 }
 
-app.use(morgan(':geo - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'));
+app.use(morgan(':geo - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"', {
+  skip: (req) => BLOCKED_PATH_PREFIXES.some(prefix => req.path.toLowerCase().startsWith(prefix)),
+}));
 
 app.use((req, res, next) => {
   if (isPageView(req)) {
@@ -99,9 +105,6 @@ app.get('/__stats', (req, res) => {
 
 // Return 404 for dotfiles/dotdirs (.env, .git, .vscode, etc.) and common
 // scanner targets before they hit the catch-all and get a misleading 200.
-const BLOCKED_PATH_PREFIXES = [
-  '/.', '/wp-', '/xmlrpc.php', '/actuator', '/cgi-bin', '/phpmyadmin',
-];
 app.use((req, res, next) => {
   const p = req.path.toLowerCase();
   if (BLOCKED_PATH_PREFIXES.some(prefix => p.startsWith(prefix))) {
@@ -124,4 +127,8 @@ app.get('*', (req, res) => {
 pruneOldHits();
 setInterval(pruneOldHits, 6 * 60 * 60 * 1000).unref();
 
-app.listen(PORT, () => console.log(`terminal je t'aime running on port ${PORT}`));
+const server = app.listen(PORT, () => console.log(`terminal je t'aime running on port ${PORT}`));
+
+process.on('SIGTERM', () => {
+  server.close(() => process.exit(0));
+});
