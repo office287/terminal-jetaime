@@ -104,7 +104,7 @@ const BLOCKED_PATH_PREFIXES = [
 ];
 app.use((req, res, next) => {
   const p = req.path.toLowerCase();
-  if (BLOCKED_PATH_PREFIXES.some(prefix => p === prefix || p.startsWith(prefix + '/') || p.startsWith(prefix + '?'))) {
+  if (BLOCKED_PATH_PREFIXES.some(prefix => p.startsWith(prefix))) {
     return res.status(404).end();
   }
   next();
