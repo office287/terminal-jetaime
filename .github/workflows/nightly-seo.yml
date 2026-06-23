@@ -16,8 +16,6 @@ name: Nightly SEO/AEO improvement + report
 #   TELEGRAM_CHAT_ID    — comma-separated chat IDs (you + co-recipients)
 
 on:
-  schedule:
-    - cron: '0 4 * * *'
   workflow_dispatch: {}
 
 permissions:
