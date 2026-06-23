@@ -124,9 +124,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-pruneOldHits();
-setInterval(pruneOldHits, 6 * 60 * 60 * 1000).unref();
-
 const server = app.listen(PORT, () => console.log(`terminal je t'aime running on port ${PORT}`));
 
 process.on('SIGTERM', () => {

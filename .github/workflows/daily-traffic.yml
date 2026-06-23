@@ -10,8 +10,6 @@ name: Daily traffic report
 #   STATS_URL            — optional; live site base URL (default https://terminaljetaime.com)
 
 on:
-  schedule:
-    - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
       date:
