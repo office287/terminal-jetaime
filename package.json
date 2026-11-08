@@ -11,10 +11,22 @@
     "traffic": "node scripts/daily-report.js",
     "stats": "node scripts/stats-daily.js",
     "stats:force": "node scripts/stats-daily.js --force",
-    "stats:print": "node scripts/stats-daily.js --print --no-send"
+    "stats:print": "node scripts/stats-daily.js --print --no-send",
+    "seo:weekly": "node scripts/weekly-seo.js",
+    "seo:weekly:preview": "node scripts/weekly-seo.js --no-send"
   },
-  "dependencies": { "express": "^4.18.2", "morgan": "^1.10.0" },
-  "optionalDependencies": { "geoip-lite": "^1.4.10" },
-  "devDependencies": { "pdfkit": "^0.15.0", "googleapis": "^144.0.0" },
-  "engines": { "node": ">=18.0.0" }
+  "dependencies": {
+    "express": "^4.18.2",
+    "morgan": "^1.10.0"
+  },
+  "optionalDependencies": {
+    "geoip-lite": "^1.4.10"
+  },
+  "devDependencies": {
+    "pdfkit": "^0.15.0",
+    "googleapis": "^144.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

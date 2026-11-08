@@ -13,8 +13,8 @@
  *   4. Update the "Last updated: Month YYYY" copy in the visible intro paragraph
  *   5. Refresh llms.txt "Last updated" line
  *
- * Why freshness matters: Google, Perplexity, ChatGPT, and Claude all weight
- * recency. A site that visibly updates beats a static one for the same query.
+ * Dates change only with --content-updated after a verified substantive edit.
+ * A scheduled audit alone is not a content update.
  *
  * Usage:
  *   node scripts/nightly-improve.js            # apply + print actions JSON
@@ -92,9 +92,11 @@ function applyLlmsTxtRefresh() {
 }
 
 function main() {
-  applySitemapRefresh();
-  applyIndexRefresh();
-  applyLlmsTxtRefresh();
+  if (ARGS.has("--content-updated")) {
+    applySitemapRefresh();
+    applyIndexRefresh();
+    applyLlmsTxtRefresh();
+  }
 
   const summary = {
     date: today,
