@@ -1,0 +1,38 @@
+[
+  {
+    "id": "verify-sitemap",
+    "priority": 1,
+    "status": "open",
+    "title": "Verify the corrected sitemap is live",
+    "minutes": 5,
+    "action": "Open https://terminaljetaime.com/sitemap.xml. It should list the homepage once, without #faq or other section fragments. If the old version remains, check the Railway deployment for the latest main commit.",
+    "done": "The live sitemap matches the corrected repository version."
+  },
+  {
+    "id": "macos-command-accuracy",
+    "priority": 2,
+    "status": "open",
+    "title": "Check the memory command on macOS",
+    "minutes": 10,
+    "action": "Check the System category on the homepage. If it still lists free -h, ask me to replace it with a documented macOS command and verify the description. This command is not included with standard macOS.",
+    "done": "The live page uses a verified macOS memory command."
+  },
+  {
+    "id": "analytics-source",
+    "priority": 3,
+    "status": "open",
+    "title": "Choose how to measure human visits",
+    "minutes": 10,
+    "action": "Tell me which analytics service you already use, or whether you want help choosing one. We need page views and organic sessions separately from Search Console clicks and bot requests.",
+    "done": "An analytics source is connected and a dated baseline is recorded."
+  },
+  {
+    "id": "first-guide",
+    "priority": 4,
+    "status": "open",
+    "title": "Choose the first useful macOS guide",
+    "minutes": 15,
+    "action": "Review Search Console queries with impressions. Choose one question the site can answer well, such as using pbcopy/pbpaste or caffeinate. Send me the query so I can prepare an original guide with tested examples and links from the cheat sheet.",
+    "done": "One query and guide topic are selected from evidence; if data is unavailable, the topic is explicitly marked as a hypothesis."
+  }
+]

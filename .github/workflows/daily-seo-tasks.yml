@@ -1,0 +1,42 @@
+name: Daily SEO task checklist
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily-seo-tasks.yml'
+      - 'scripts/daily-seo-tasks.js'
+permissions:
+  contents: read
+concurrency:
+  group: daily-seo-task-checklist
+  cancel-in-progress: false
+jobs:
+  checklist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --include=dev --package-lock=false
+      - name: Audit, prioritize tasks and send Telegram checklist
+        run: node scripts/daily-seo-tasks.js
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: daily-seo-tasks
+          path: |
+            reports/*-daily-seo-tasks.txt
+            reports/*-weekly-seo.json
+          retention-days: 30
