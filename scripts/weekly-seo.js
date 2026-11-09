@@ -91,8 +91,23 @@ async function main() {
   for (const chat of chats) {
     const form=new FormData(); form.set('chat_id',chat); form.set('caption',`Weekly SEO report — ${date(0)}`);
     form.set('document',new Blob([markdown],{type:'text/plain'}),path.basename(base)+'.md');
-    const r=await fetch(`https://api.telegram.org/bot${token}/sendDocument`,{method:'POST',body:form,signal:AbortSignal.timeout(30000)});
-    const body=await r.json(); if (!r.ok || !body.ok) throw new Error('Report saved; Telegram delivery failed.');
+    let delivered = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const r=await fetch(`https://api.telegram.org/bot${token}/sendDocument`,{method:'POST',body:form,signal:AbortSignal.timeout(30000)});
+        const body=await r.json();
+        if (r.ok && body.ok) { delivered = true; break; }
+        console.error(`Telegram document rejected: HTTP ${r.status}, API code ${body.error_code || 'unknown'}: ${body.description || 'No description'}`);
+        if (r.status !== 429 && r.status < 500) break;
+        const delay = Math.min(Number(body.parameters?.retry_after) || 2, 30);
+        await new Promise(resolve=>setTimeout(resolve, delay * 1000));
+      } catch {
+        console.error('Telegram document request failed; retrying.');
+        await new Promise(resolve=>setTimeout(resolve, 2000));
+      }
+    }
+    if (!delivered) throw new Error('Report saved; Telegram delivery failed.');
+    console.log('Weekly SEO report delivered successfully.');
   }
 }
 if (require.main===module) main().catch(()=>{console.error('Weekly report failed. Check artifact, network, and delivery configuration.');process.exitCode=1;});
