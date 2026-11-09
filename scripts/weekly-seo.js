@@ -8,20 +8,26 @@ const date = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10)
 const clean = s => String(s).replace(/[\r\n|]/g, ' ');
 const windows = [{start:date(-9),end:date(-3)}, {start:date(-16),end:date(-10)}];
 async function searchData() {
-  if (!process.env.GSC_SERVICE_ACCOUNT_JSON) return {status:'Unavailable: GSC_SERVICE_ACCOUNT_JSON is not configured.'};
+  if (!process.env.GSC_ACCESS_TOKEN && !process.env.GSC_SERVICE_ACCOUNT_JSON) return {status:'Unavailable: Search Console authentication is not configured. Check the Google authentication step in GitHub Actions.'};
   try {
     const { google } = require('googleapis');
-    const credentials = JSON.parse(Buffer.from(process.env.GSC_SERVICE_ACCOUNT_JSON, 'base64').toString());
-    const auth = new google.auth.GoogleAuth({credentials, scopes:['https://www.googleapis.com/auth/webmasters.readonly']});
+    let auth;
+    if (process.env.GSC_ACCESS_TOKEN) {
+      auth = new google.auth.OAuth2();
+      auth.setCredentials({access_token:process.env.GSC_ACCESS_TOKEN});
+    } else {
+      const credentials = JSON.parse(Buffer.from(process.env.GSC_SERVICE_ACCOUNT_JSON, 'base64').toString());
+      auth = new google.auth.GoogleAuth({credentials, scopes:['https://www.googleapis.com/auth/webmasters.readonly']});
+    }
     const api = google.searchconsole({version:'v1', auth});
     const query = async (w, dimensions) => (await api.searchanalytics.query({
-      siteUrl:process.env.GSC_SITE_URL || 'https://terminaljetaime.com/',
+      siteUrl:process.env.GSC_SITE_URL || 'sc-domain:terminaljetaime.com',
       requestBody:{startDate:w.start,endDate:w.end,dimensions,type:'web',dataState:'final',rowLimit:25000}
     })).data.rows || [];
     const periods = [];
     for (const w of windows) periods.push({window:w, totals:await query(w, []), queries:await query(w,['query']), pages:await query(w,['page'])});
     return {status:'Available; finalized Google web search data. Three-day reporting lag; dates follow Search Console Pacific time.', periods};
-  } catch (e) { return {status:`Unavailable: Search Console request failed (${e.code || 'authentication/API error'}). Check property access and secret configuration.`}; }
+  } catch (e) { return {status:`Unavailable: Search Console request failed (${e.code || 'authentication/API error'}). Check property access and the Google authentication step in GitHub Actions.`}; }
 }
 async function audit() {
   const results = [];
@@ -90,4 +96,4 @@ async function main() {
   }
 }
 if (require.main===module) main().catch(()=>{console.error('Weekly report failed. Check artifact, network, and delivery configuration.');process.exitCode=1;});
-module.exports={report,windows};
+module.exports={report,windows,searchData};

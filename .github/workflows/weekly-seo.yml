@@ -10,6 +10,7 @@ on:
       - 'scripts/weekly-seo.js'
 permissions:
   contents: read
+  id-token: write
 jobs:
   report:
     runs-on: ubuntu-latest
@@ -22,11 +23,22 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --include=dev --package-lock=false
+      - name: Authenticate read-only Search Console access
+        id: gsc-auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/726465456292/locations/global/workloadIdentityPools/github-pool-2/providers/github-provide
+          service_account: gsc-reader@terminaljetaime.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/webmasters.readonly
+          access_token_lifetime: 900s
+          create_credentials_file: false
+          export_environment_variables: false
       - name: Compare performance and send report
         run: node scripts/weekly-seo.js
         env:
-          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
-          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+          GSC_ACCESS_TOKEN: ${{ steps.gsc-auth.outputs.access_token }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL || 'sc-domain:terminaljetaime.com' }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       - uses: actions/upload-artifact@v4
